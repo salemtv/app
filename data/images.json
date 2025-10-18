@@ -1,0 +1,7 @@
+{
+  "title": "Imágenes - STV",
+  "items": [
+    { "name": "Partido1", "url": "https://example.com/img1.jpg", "video": "https://example.com/video1.mp4" },
+    { "name": "Partido2", "url": "https://example.com/img2.jpg", "video": "https://www.youtube.com/embed/VIDEO_ID" }
+  ]
+}
