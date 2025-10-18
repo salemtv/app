@@ -1,0 +1,18 @@
+[
+  {
+    "id": "n1",
+    "title": "Partido en vivo",
+    "body": "Gol del equipo local",
+    "created": "2025-10-18T12:00:00Z",
+    "expire_days": 2,
+    "action": "canal:liga1max"
+  },
+  {
+    "id": "n2",
+    "title": "Nuevo video",
+    "body": "Resumen de la jornada disponible",
+    "created": "2025-10-17T08:00:00Z",
+    "expire_days": 7,
+    "action": "image:Partido1"
+  }
+]
