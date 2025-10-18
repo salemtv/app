@@ -1,3 +1,11 @@
+/* styles.css v1.1
+   Cambios: 
+   - Tabs 100% responsive y centradas dentro del max-width del main.
+   - Scroll horizontal si hay más pestañas.
+   - Añadido estilo para botón de cierre en toast.
+   Mantiene el resto del CSS original intacto.
+*/
+
 :root {
   --color-bg: #0e0c1a;
   --color-primary: slateblue;
@@ -57,22 +65,43 @@ header .title {font-weight:700;letter-spacing:0.6px}
   min-width:18px;text-align:center;
 }
 
-/* Tabs sticky under header */
+/* Tabs sticky under header
+   MODIFICACIÓN v1.1:
+   - Hago que el contenedor de tabs ocupe ancho total,
+     centrando el inner dentro del max-width.
+   - Cada .tab ahora se distribuye con flex para ocupar el ancho
+     y soportar min-width para que no se aplasten. Si hay demasiadas
+     pestañas, el contenedor permite scroll horizontal.
+*/
 .tabs {
   position:sticky; top:72px; /* header height ~72 */
   z-index:50;
   background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
-  padding:8px 1rem;
+  padding:8px 0;
   backdrop-filter: blur(4px);
+  width:100%;
+  overflow-x:auto;   /* permite scroll horizontal si hay muchas pestañas */
+  -webkit-overflow-scrolling: touch;
 }
 .tabs-inner {
-  max-width:1000px;margin:0 auto;display:flex;gap:8px;align-items:center;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  width:100%;
+  max-width:1000px;
+  margin:0 auto;     /* centra el inner dentro del ancho disponible */
+  padding:8px 1rem;
+  flex-wrap:nowrap;  /* evitar wrap para garantizar scroll si excede */
 }
 .tab {
   background:var(--color-secondary);
   padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--color-text);
   display:flex;gap:8px;align-items:center;
   user-select:none;
+  min-width:120px;   /* evita que las tabs se colapsen */
+  text-align:center;
+  justify-content:center;
+  flex: 1 1 auto;    /* distribuye el espacio entre tabs para ocupar 100% */
 }
 .tab.active { background:var(--color-primary); font-weight:600; }
 
@@ -125,13 +154,23 @@ select{background:var(--color-button);color:white;border:none;padding:0.4rem 0.8
 .btn-small{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 8px;border-radius:8px;color:var(--color-text);cursor:pointer}
 
 /* Toast (notification slide) */
+/* He mantenido la mayor parte del estilo original y añadí clases internas para header/close */
 .toast {
   position:fixed;left:50%;transform:translateX(-50%) translateY(30px);bottom:20px;
   background:var(--color-primary);color:white;padding:12px 16px;border-radius:10px;
   box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:80;opacity:0;pointer-events:none;
   transition: transform .35s ease, opacity .25s ease;
+  min-width:260px;
+  max-width:90%;
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto; }
+.toast-header {
+  display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:600;
+}
+.toast-close {
+  background:transparent;border:none;color:white;font-size:16px;cursor:pointer;line-height:1;
+}
+.toast-body { margin-top:6px;font-size:14px; }
 
 footer{background:var(--color-bg);padding:1.2rem;text-align:center;font-size:0.8rem;color:var(--color-muted);margin-top:18px}
 
