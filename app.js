@@ -1,3 +1,11 @@
+/* app.js v1.1
+   Version: v1.1 - Mejora de pestañas y sistema de notificaciones
+   - Conserva TODO el código original v1.0 no relacionado con notifs/tabs.
+   - Cambios puntuales: notificaciones (delay inicial, intervalo 3s, botón cierre individual,
+     persistencia en localStorage como "vista", eliminación en tiempo real desde panel)
+   - Añadida vigilancia periódica del JSON de notifs para inyectar nuevas notificaciones en tiempo real.
+*/
+
 /* ============================
    Datos / JSON paths
    ============================ */
@@ -70,6 +78,7 @@ async function loadAllData() {
     const ls = localStorage.getItem(LS_NOTIFS);
     notifications = ls ? JSON.parse(ls) : [];
   } else {
+    // Guardamos la copia local al cargar
     localStorage.setItem(LS_NOTIFS, JSON.stringify(notifications));
   }
 
@@ -82,6 +91,9 @@ async function loadAllData() {
 /* ---------------------------
    Notificaciones: carga, filtrado, render y secuencia rotativa
    --------------------------- */
+
+/* Mantengo la función loadNotificationsFromLS pero la uso coherentemente
+   para filtrar expiradas y manejar la persistencia */
 function loadNotificationsFromLS() {
   let arr = JSON.parse(localStorage.getItem(LS_NOTIFS) || '[]');
   const now = new Date();
@@ -95,6 +107,7 @@ function loadNotificationsFromLS() {
   return arr;
 }
 
+/* updateNotifBadge: muestra número pendiente NO descartado (historial permanece) */
 function updateNotifBadge() {
   const notifs = loadNotificationsFromLS();
   const dismissed = getDismissed();
@@ -107,6 +120,7 @@ function updateNotifBadge() {
   }
 }
 
+/* renderNotifPanel: panel histórico (muestra todo, permite eliminar en tiempo real) */
 function renderNotifPanel() {
   const notifs = loadNotificationsFromLS();
   const dismissed = getDismissed();
@@ -129,6 +143,7 @@ function renderNotifPanel() {
       <div class="notif-actions">
         <button class="btn-small" data-action="dismiss" data-id="${n.id}">${getDismissed().includes(n.id) ? 'Revelar' : 'Descartar'}</button>
         <button class="btn-small" data-action="open" data-id="${n.id}">Abrir</button>
+        <button class="btn-small" data-action="delete" data-id="${n.id}">Eliminar</button>
       </div>
     `;
     notifList.appendChild(el);
@@ -148,54 +163,116 @@ function renderNotifPanel() {
         const all = loadNotificationsFromLS();
         const n = all.find(x => x.id === id);
         if (n) executeNotificationOpen(n);
+      } else if (action === 'delete') {
+        // eliminar la notificación del historial y del almacenamiento (en tiempo real)
+        let notifs = loadNotificationsFromLS();
+        notifs = notifs.filter(x => x.id !== id);
+        localStorage.setItem(LS_NOTIFS, JSON.stringify(notifs));
+        // tambien quitarla de dismissed si existiera
+        const dismissed = getDismissed().filter(x => x !== id);
+        setDismissed(dismissed);
+        updateNotifBadge();
+        renderNotifPanel();
       }
     });
   });
 }
 
-/* show single toast (only content) */
-function showToastOnly(text, meta = '') {
-  if (activeToastTimeout) { clearTimeout(activeToastTimeout); activeToastTimeout = null; }
-  toastEl.innerHTML = `<div>${escapeHtml(text)}</div>${meta ? `<div style="font-size:12px;margin-top:6px;color:var(--color-muted)">${escapeHtml(meta)}</div>` : ''}`;
+/* show single toast (con botón de cerrar propio)
+   v1.1 behavior:
+   - Mark as dismissed/seen when user clicks close btn
+   - Each toast shows only una vez por id persisted en localStorage (dismissed list)
+*/
+function showToastOnly(notif) {
+  if (!notif || !notif.id) return;
+  // si ya fue descartada (vista) => NO mostrar
+  const dismissed = getDismissed();
+  if (dismissed.includes(notif.id)) return;
+
+  // Limpiar timer previo si existe
+  if (activeToastTimeout) {
+    clearTimeout(activeToastTimeout);
+    activeToastTimeout = null;
+  }
+
+  toastEl.innerHTML = `
+    <div class="toast-header">
+      <div>${escapeHtml(notif.title || 'Notificación')}</div>
+      <button class="toast-close" aria-label="Cerrar">×</button>
+    </div>
+    <div class="toast-body">${escapeHtml(notif.body || notif.content || '')}</div>
+  `;
   toastEl.classList.add('show');
+
+  const closeBtn = toastEl.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => {
+    // marcar como descartada (visto) para que no vuelva a aparecer
+    const dismissedNow = getDismissed();
+    if (!dismissedNow.includes(notif.id)) dismissedNow.push(notif.id);
+    setDismissed(dismissedNow);
+    updateNotifBadge();
+    hideToast();
+  });
 }
 
 /* hide toast */
 function hideToast() {
   toastEl.classList.remove('show');
+  // limpiar contenido después de la transición para evitar re-binding
+  setTimeout(() => {
+    toastEl.innerHTML = '';
+  }, 300);
 }
 
-/* run rotation over pending notifs: 3s show, 2s gap -> next */
-function startNotifSequence() {
-  stopNotifSequence();
+/* run rotation over pending notifs:
+   v1.1 new logic:
+   - Espera inicial de 5s tras entrar a la web.
+   - Muestra notificación por notificación con intervalo de 3s entre ellas.
+   - Marca la notificación como "vista" **solo** si el usuario pulsa el cierre; si no la marca el usuario,
+     se considera "mostrada" pero no descartada (NO se añade a dismissed automáticamente).
+   - Para evitar loops: no se vuelve a mostrar una notificación ya marcada en dismissed.
+*/
+let notifSequenceRunning = false;
+async function startNotifSequence() {
+  if (notifSequenceRunning) return;
+  notifSequenceRunning = true;
+
   const notifs = loadNotificationsFromLS().filter(n => !getDismissed().includes(n.id));
-  if (notifs.length === 0) return;
-  notifIndex = 0;
-  (function next() {
-    if (notifIndex >= notifs.length) {
-      notifIndex = 0;
-    }
-    const n = notifs[notifIndex++];
-    const body = n.body || n.content || '';
-    const dlabel = formatDDMM(n.created || new Date().toISOString());
-    const created = new Date(n.created || Date.now());
-    const expireAt = new Date(created.getTime() + ((n.expire_days || 0) * 24*60*60*1000));
-    const expLabel = (expireAt.toDateString() === (new Date()).toDateString()) ? 'Hoy*' : formatDDMM(expireAt.toISOString());
+  if (notifs.length === 0) {
+    notifSequenceRunning = false;
+    return;
+  }
 
-    showToastOnly(body, expLabel);
+  // Delay inicial de 5 segundos
+  await new Promise(r => setTimeout(r, 5000));
 
-    notifSequenceTimer = setTimeout(() => {
-      hideToast();
-      notifSequenceTimer = setTimeout(() => next(), 2000);
-    }, 3000);
-  })();
+  for (let i = 0; i < notifs.length; i++) {
+    // antes de mostrar comprobar si ya fue descartada en meantime (ej. por panel)
+    const dismissed = getDismissed();
+    if (dismissed.includes(notifs[i].id)) continue;
+
+    showToastOnly(notifs[i]);
+    // esperar 3s mostrando (usuario puede cerrar antes)
+    await new Promise(r => {
+      activeToastTimeout = setTimeout(r, 3000);
+    });
+    // ocultar (si aún visible)
+    hideToast();
+    // pequeño gap de 500ms antes de la siguiente
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  notifSequenceRunning = false;
 }
+
+/* stopNotifSequence: limpia timers y oculta toast */
 function stopNotifSequence(){
-  if (notifSequenceTimer) { clearTimeout(notifSequenceTimer); notifSequenceTimer = null; }
+  if (activeToastTimeout) { clearTimeout(activeToastTimeout); activeToastTimeout = null; }
   hideToast();
+  notifSequenceRunning = false;
 }
 
-/* Execute "Abrir" action */
+/* Execute "Abrir" action (mantengo exactamente la lógica original) */
 function executeNotificationOpen(n) {
   const actionVal = n.action || n.accion || n.open || '';
   if (typeof actionVal === 'string' && actionVal.startsWith('canal:')) {
@@ -257,6 +334,7 @@ function executeNotificationOpen(n) {
 
 /* ---------------------------
    SPA rendering: Images, Videos, EnVi
+   (Mantengo todo exactamente como v1.0)
    --------------------------- */
 function setActiveTab(tabName, pushHistory=true) {
   tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
@@ -544,13 +622,51 @@ clearAllBtn.addEventListener('click', () => {
 });
 
 /* ---------------------------
+   Real-time watch for new notifications (v1.1)
+   - Cada 15s consulta data/notifications.json y compara ids.
+   - Si hay nuevas notificaciones -> las guarda en localStorage y dispara showToastOnly para cada nueva.
+   --------------------------- */
+let watchInterval = null;
+async function watchNotificationsRealtime() {
+  // limpiar si ya existe
+  if (watchInterval) clearInterval(watchInterval);
+
+  watchInterval = setInterval(async () => {
+    const latest = await fetchJSON('data/notifications.json', null);
+    if (!latest) return;
+    const stored = loadNotificationsFromLS();
+    const storedIds = stored.map(s => s.id);
+    // detectar nuevos
+    const newItems = latest.filter(l => !storedIds.includes(l.id));
+    if (newItems.length > 0) {
+      // actualizar copia local (mantener expirations, etc.)
+      const merged = [...latest];
+      localStorage.setItem(LS_NOTIFS, JSON.stringify(merged));
+      updateNotifBadge();
+      renderNotifPanel();
+      // mostrar inmediatamente en pantalla (solo los no descartados)
+      newItems.forEach(n => {
+        // si no está descartado, mostrar en toast
+        if (!getDismissed().includes(n.id)) {
+          // mostrar con pequeño delay para no sobreponer múltiples toasts instantáneos
+          setTimeout(() => showToastOnly(n), 300);
+        }
+      });
+    }
+  }, 15000);
+}
+
+/* ---------------------------
    Initial load: fetch data and start notifs
    --------------------------- */
 (async function init() {
   const notifs = await loadAllData();
   updateNotifBadge();
   renderNotifPanel();
+  // Inicia la secuencia de notificaciones (delay 5s + 3s entre cada)
   startNotifSequence();
+  // Inicia vigilancia en background para nuevas notificaciones en data/notifications.json
+  watchNotificationsRealtime();
 })();
 
 document.addEventListener('visibilitychange', () => {
