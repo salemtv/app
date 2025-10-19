@@ -1,6 +1,33 @@
 # 🧾 CHANGELOG - SalemTV PWA
 
+## v1.3 - Correcciones críticas y reestructuración de multimedia
+📅 Fecha: 2025-10-19
+
+### Archivos modificados
+- `styles.css v1.3`
+- `app.js v1.3`
+
+### Cambios principales
+**Swipe bug**
+- Se solucionó el problema donde un swipe agresivo duplicaba la página o dejaba pantalla en blanco introduciendo un bloqueo (debounce) y evitando disparos repetidos.
+
+**Notificaciones**
+- Badge ahora cuenta todas las notificaciones no eliminadas (historial), aunque ya hayan sido mostradas como toast.
+- Se añadió `LS_SHOWN` para registrar toasts ya mostrados y evitar re-reproducción sin afectar el contador.
+- Al pulsar `Abrir` desde el panel, éste se cierra automáticamente.
+- `Eliminar` borra permanentemente la notificación (marcada en `LS_REMOVED`) para que no vuelva a importarse ni mostrarse.
+
+**Videos & EnVi**
+- `videos.json` ahora soporta entradas con `sources[]` por video; la UI de Videos fue rehecha: playlist + player que cambia fuentes sin recarga.
+- `envi.json` ahora contiene `base_url`, `default` y `canales[]`. `renderEnVi` utiliza estos datos dinámicamente.
+- Se añadió loader por sección (images/videos/EnVi) y caching local (localStorage TTL) para acelerar cargas.
+
+**Carga & UX**
+- Loading overlays por sección mientras se cargan imágenes/videos.
+- Cache JSON en `localStorage` con TTL (por defecto 5 minutos) para mejorar percepciones de velocidad.
+
 ---
+
 ## v1.2 - Corrección de bugs y mejoras visuales
 📅 Fecha: 2025-10-19
 
