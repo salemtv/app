@@ -1,7 +1,7 @@
 {
   "title": "Imágenes - STV",
   "items": [
-    { "name": "Partido1", "url": "https://example.com/img1.jpg", "video": "https://example.com/video1.mp4" },
+    { "name": "Partido1", "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcCUGcgx7SElJI2jGwTzdtXmljYPdDqy3qow&usqp=CAU", "video": "https://cdn.flick.vip/385128/index.m3u8?v=1046846081" },
     { "name": "Partido2", "url": "https://example.com/img2.jpg", "video": "https://www.youtube.com/embed/VIDEO_ID" }
   ]
 }
