@@ -1,5 +1,30 @@
 # 🧾 CHANGELOG - SalemTV PWA
 
+## v1.4 - App-like protections, EnVi external config, images loader, videos removed
+📅 Fecha: 2025-10-19
+
+### Archivos modificados / añadidos
+- `app.js v1.4`
+- `styles.css v1.4`
+- `envi.json v1.0`
+
+### Cambios principales
+- **EnVi**: Ahora **usa** `envi.json` (base_url, default, canales) — file añadida. Se eliminaron valores hardcode en `app.js`.
+- **Videos**: La sección Videos fue eliminada **desde la raíz** (la pestaña queda vacía como placeholder).
+- **Imágenes**:
+  - Loader visible solo en la página de Imágenes hasta que carguen los assets o venza timeout.
+  - Evité mensaje “No hay imágenes” antes de que termine la carga.
+  - Al tocar/clicar una imagen: se abre el recurso directamente para usar el **reproductor/visor nativo** del dispositivo.
+- **Swipe**: Se quitaron por completo las acciones de swipe (no hay cambio de pestaña por deslizar).
+- **App-like protections**:
+  - Deshabilitado clic derecho (contextmenu).
+  - Prevención de zoom por teclado y rueda, bloqueo de gestos (pinch/double-tap) lo más robusto posible en JS.
+  - `overscroll-behavior` y `touch-action` para evitar navegar fuera del app y evitar overflow.
+  - Deshabilitada selección y arrastre de imágenes.
+- **Notificaciones**: se mantienen las mejoras de v1.3 (LS_SHOWN, LS_REMOVED, badge contando histórico).
+
+---
+
 ## v1.3 - Correcciones críticas y reestructuración de multimedia
 📅 Fecha: 2025-10-19
 
