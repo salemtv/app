@@ -1,33 +1,25 @@
 # 🧾 CHANGELOG - SalemTV PWA
 
 ---
+## v1.2 - Corrección de bugs y mejoras visuales
+📅 Fecha: 2025-10-19
 
-## v1.0 - Estructura base separada
-📅 Fecha: 2025-10-18
+### Archivos modificados
+- `styles.css v1.2`
+- `app.js v1.2`
 
-### Archivos creados
-- `index.html v1.0` — Separado del código monolítico. Estructura HTML limpia y modular.
-- `styles.css v1.0` — Estilos extraídos a archivo independiente, con variables, temas y media queries.
-- `app.js v1.0` — Lógica completa del PWA (tabs, notificaciones, EnVi, etc.).
-- `manifest.json v1.0` — Configuración de la PWA (nombre, tema, ícono).
-- `sw.js v1.0` — Service Worker básico.
-- `data/*.json v1.0` — Datos estáticos de prueba (imágenes, videos, notificaciones, EnVi).
-- `CHANGELOG.md` — Archivo de control de versiones (este documento).
+### Cambios principales
+**Funcionales**
+- Eliminado completamente el botón **“Descartar”** del panel de notificaciones.
+- Las notificaciones eliminadas desaparecen definitivamente del `localStorage`.
+- El toast marca automáticamente una notificación como vista al mostrarse (no se repite).
+- El toast se oculta tras 3 s y no queda fijo en pantalla.
+- Corregido bug donde reaparecían notificaciones eliminadas.
 
-### Notas
-- Proyecto reorganizado desde `codigo.html` monolítico.
-- Listo para futuras mejoras por módulo (HTML, CSS, JS o datos).
-- Estructura de archivos establecida para control de versiones incremental (v1.x, v2.x, etc.).
-
----
-
-🧩 **Próximos pasos sugeridos**
-- [ ] Añadir favicon local y assets optimizados.
-- [ ] Implementar minificación (build simple).
-- [ ] Mejorar precarga y caché en `sw.js`.
-- [ ] Añadir modo oscuro/tema dinámico.
-
-# 🧾 CHANGELOG - SalemTV PWA
+**Visuales**
+- Icono de notificaciones agrandado (28 px) y alineado con el logotipo.
+- Barra de pestañas ajustada dentro del flujo del diseño con padding y overflow correctos.
+- Scroll horizontal suave para múltiples pestañas.
 
 ---
 
@@ -63,5 +55,32 @@
   - Añadir tipos de notificación (info/alert/success) con colores y accesibilidad,
   - Añadir indicador visual si la notificación tiene acción (canal/image),
   - O permitir reactivar notificaciones descartadas desde el panel.
+
+---
+
+## v1.0 - Estructura base separada
+📅 Fecha: 2025-10-18
+
+### Archivos creados
+- `index.html v1.0` — Separado del código monolítico. Estructura HTML limpia y modular.
+- `styles.css v1.0` — Estilos extraídos a archivo independiente, con variables, temas y media queries.
+- `app.js v1.0` — Lógica completa del PWA (tabs, notificaciones, EnVi, etc.).
+- `manifest.json v1.0` — Configuración de la PWA (nombre, tema, ícono).
+- `sw.js v1.0` — Service Worker básico.
+- `data/*.json v1.0` — Datos estáticos de prueba (imágenes, videos, notificaciones, EnVi).
+- `CHANGELOG.md` — Archivo de control de versiones (este documento).
+
+### Notas
+- Proyecto reorganizado desde `codigo.html` monolítico.
+- Listo para futuras mejoras por módulo (HTML, CSS, JS o datos).
+- Estructura de archivos establecida para control de versiones incremental (v1.x, v2.x, etc.).
+
+---
+
+🧩 **Próximos pasos sugeridos**
+- [ ] Añadir favicon local y assets optimizados.
+- [ ] Implementar minificación (build simple).
+- [ ] Mejorar precarga y caché en `sw.js`.
+- [ ] Añadir modo oscuro/tema dinámico.
 
 ---
