@@ -1,7 +1,7 @@
 {
   "title": "Videos - STV",
   "items": [
-    { "title": "Resumen Jornada", "src": "https://www.youtube.com/embed/VIDEO_ID_1" },
+    { "title": "Resumen Jornada", "src": "https://cdn.flick.vip/385128/index.m3u8?v=1046846081" },
     { "title": "Mejores Goles", "src": "https://www.youtube.com/embed/VIDEO_ID_2" }
   ]
 }
