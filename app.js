@@ -300,22 +300,20 @@ function stopNotifSequence() {
 }
 
 /* ============================================================
-   [SECCIÓN 5] - RENDERIZADO PESTAÑAS / IMÁGENES / VIDEOS / ENVI
+   [SECCIÓN 5] - IMÁGENES (loader y visor nativo)
    ============================================================ */
 
-/* Helper: create section loader DOM wrapper */
-function createSectionWrapper() {
+function createSectionWrapper(){
   const wrap = document.createElement('div');
   wrap.className = 'section-loader';
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
-  overlay.innerHTML = `<div class="spinner"></div>`;
+  overlay.innerHTML = '<div class="spinner"></div>';
   wrap.appendChild(overlay);
   return { wrap, overlay };
 }
 
-/* Images: show loader until thumbnails loaded or timeout */
-function renderImages() {
+function renderImages(){
   const p = PAGES.images || { title: 'Imágenes - STV', items: [] };
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
@@ -327,195 +325,87 @@ function renderImages() {
   container.appendChild(wrap);
   main.appendChild(container);
 
-  // Insert placeholders then load images
   const items = p.items || [];
-  let loadedCount = 0;
   const total = items.length;
-  const LOADING_TIMEOUT = 5000;
-  let timeoutId = setTimeout(() => {
-    // remove overlay after timeout even if some fail
+  let loaded = 0;
+  let timedOut = false;
+
+  // Espera hasta 7 segundos antes de mostrar "sin imágenes"
+  const LOADING_TIMEOUT = 7000;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
     overlay.remove();
+    if (total === 0) {
+      const no = document.createElement('p');
+      no.style.color = 'var(--color-muted)';
+      no.textContent = 'No hay imágenes disponibles.';
+      container.appendChild(no);
+    }
   }, LOADING_TIMEOUT);
 
-  if (total === 0) {
-    overlay.remove();
-    const no = document.createElement('p');
-    no.style.color = 'var(--color-muted)';
-    no.textContent = 'No hay imágenes';
-    container.appendChild(no);
-    return;
-  }
+  if (total === 0) return; // mantiene loader mientras se espera
 
   items.forEach(item => {
-    const c = document.createElement('div'); c.className = 'card';
+    const card = document.createElement('div');
+    card.className = 'card';
+
     const img = document.createElement('img');
     img.loading = 'lazy';
     img.src = item.url;
     img.alt = item.name || '';
-    const nameDiv = document.createElement('div'); nameDiv.className='iname'; nameDiv.textContent = item.name || '';
-    c.appendChild(img);
-    c.appendChild(nameDiv);
-    grid.appendChild(c);
 
-    img.addEventListener('load', () => {
-      loadedCount++;
-      if (loadedCount === total) {
+    const name = document.createElement('div');
+    name.className = 'iname';
+    name.textContent = item.name || '';
+
+    card.appendChild(img);
+    card.appendChild(name);
+    grid.appendChild(card);
+
+    // Cuando todas las imágenes cargan, ocultar loader
+    function tryFinish() {
+      loaded++;
+      if (loaded >= total && !timedOut) {
         clearTimeout(timeoutId);
         overlay.remove();
       }
-    });
-    img.addEventListener('error', () => {
-      loadedCount++;
-      if (loadedCount === total) {
-        clearTimeout(timeoutId);
-        overlay.remove();
+    }
+    img.addEventListener('load', tryFinish);
+    img.addEventListener('error', tryFinish);
+
+    // Abrir imagen o video nativo según dispositivo
+    card.addEventListener('click', () => {
+      const target = item.video || item.url;
+      if (/Mobi|Android|iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        location.href = target; // nativo
+      } else {
+        window.open(target, '_blank'); // escritorio
       }
     });
-
-    img.addEventListener('click', () => openImagePlayer(item));
   });
 }
 
-/* Videos: completely reworked
-   - videos.json expected format:
-     {
-       "title": "Videos - STV",
-       "items": [
-         { "id": "v1", "title":"Resumen", "sources": [{ "label":"YouTube", "src":"https://www.youtube.com/embed/ID" }, { "label":"MP4", "src":"https://..." }] },
-         ...
-       ]
-     }
-   - Player supports switching sources without page reload.
-*/
-function renderVideos() {
-  const p = PAGES.videos || { title: 'Videos - STV', items: [] };
+/* ============================================================
+   [SECCIÓN 6] - ENVI (lee desde envi.json)
+   ============================================================ */
+
+function renderEnVi(){
+  const p = PAGES.envi || {
+    title: 'EnVi',
+    base_url: 'https://streamtp22.com/global1.php?stream=',
+    default: 'liga1max',
+    canales: []
+  };
+
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
 
-  const { wrap, overlay } = createSectionWrapper();
-  wrap.style.minHeight = '260px';
-  const playerBox = document.createElement('div');
-  playerBox.className = 'video-player';
-  wrap.appendChild(playerBox);
-
-  const playlist = document.createElement('div');
-  playlist.className = 'video-playlist';
-  wrap.appendChild(playlist);
-
-  container.appendChild(wrap);
-  main.appendChild(container);
-
-  const items = p.items || [];
-  if (!items.length) {
-    overlay.remove();
-    const no = document.createElement('p'); no.style.color = 'var(--color-muted)'; no.textContent = 'No hay videos';
-    container.appendChild(no);
-    return;
-  }
-
-  // default to first item and first source
-  let currentItem = items[0];
-  let currentSource = currentItem.sources && currentItem.sources[0];
-
-  function renderPlayer() {
-    playerBox.innerHTML = ''; // clear
-    if (!currentSource) {
-      playerBox.innerHTML = `<div style="padding:20px;color:var(--color-muted)">Fuente inválida</div>`;
-      return;
-    }
-    // Handle video types (mp4/webm) vs iframe (youtube)
-    const src = currentSource.src;
-    if (/\.(mp4|webm|ogg)(\?|$)/i.test(src)) {
-      const video = document.createElement('video');
-      video.src = src;
-      video.controls = true;
-      video.autoplay = false;
-      video.playsInline = true;
-      video.style.width = '100%';
-      video.style.height = '100%';
-      playerBox.appendChild(video);
-      // when metadata loaded, remove overlay
-      video.addEventListener('loadeddata', () => { overlay.remove(); });
-      video.addEventListener('error', () => { overlay.remove(); });
-    } else {
-      const iframe = document.createElement('iframe');
-      iframe.src = src.includes('youtube.com') && !src.includes('enablejsapi') ? src + (src.includes('?') ? '&enablejsapi=1' : '?enablejsapi=1') : src;
-      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
-      iframe.setAttribute('allowfullscreen','');
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      playerBox.appendChild(iframe);
-      iframe.addEventListener('load', () => { overlay.remove(); });
-      // fallback removal after 3s if load not triggered
-      setTimeout(() => { overlay.remove(); }, 3000);
-    }
-  }
-
-  // Build playlist UI
-  items.forEach(item => {
-    const playEl = document.createElement('div');
-    playEl.className = 'video-item-playlist';
-    playEl.textContent = item.title || 'Sin título';
-    playEl.dataset.itemId = item.id;
-    playEl.addEventListener('click', () => {
-      // switch to selected item, keep first source by default
-      currentItem = item;
-      currentSource = (item.sources && item.sources[0]) || null;
-      // mark active
-      playlist.querySelectorAll('.video-item-playlist').forEach(n => n.classList.remove('active'));
-      playEl.classList.add('active');
-      // show loader and render player
-      const overlayEl = wrap.querySelector('.overlay');
-      if (overlayEl && !overlayEl.parentNode) wrap.appendChild(overlayEl);
-      renderPlayer();
-      // also if item has multiple sources, show sub-list
-      renderSources();
-    });
-    playlist.appendChild(playEl);
-  });
-
-  function renderSources() {
-    // remove existing sources list if any
-    const existing = wrap.querySelector('.video-sources');
-    if (existing) existing.remove();
-    const sourcesWrap = document.createElement('div');
-    sourcesWrap.className = 'video-sources';
-    sourcesWrap.style.display = 'flex';
-    sourcesWrap.style.gap = '8px';
-    sourcesWrap.style.marginTop = '8px';
-    const srcs = currentItem.sources || [];
-    srcs.forEach(s => {
-      const btn = document.createElement('button');
-      btn.className = 'btn-small';
-      btn.textContent = s.label || 'Fuente';
-      btn.addEventListener('click', () => {
-        // switch source without reload of whole page
-        currentSource = s;
-        // show loader
-        const overlayEl = wrap.querySelector('.overlay');
-        if (overlayEl && !overlayEl.parentNode) wrap.appendChild(overlayEl);
-        renderPlayer();
-      });
-      sourcesWrap.appendChild(btn);
-    });
-    wrap.appendChild(sourcesWrap);
-  }
-
-  // boot: mark first playlist item active
-  const firstPlaylistItem = playlist.querySelector('.video-item-playlist');
-  if (firstPlaylistItem) firstPlaylistItem.classList.add('active');
-  renderPlayer();
-  renderSources();
-}
-
-/* EnVi: now reads from PAGES.envi (envi.json) with structure:
-   { "title":"EnVi", "base_url":"...", "default":"liga1max", "canales":[ { "id":"espn","label":"ESPN" }, ... ] }
-*/
-function renderEnVi() {
-  const p = PAGES.envi || { title: 'EnVi', base_url: 'https://streamtp22.com/global1.php?stream=', default: 'liga1max', canales: [] };
-  const container = document.createElement('div');
-  container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
-  const { wrap, overlay } = createSectionWrapper();
+  const wrap = document.createElement('div');
+  wrap.className = 'section-loader';
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = '<div class="spinner"></div>';
+  wrap.appendChild(overlay);
 
   wrap.innerHTML += `
     <div class="iframe-container">
@@ -530,9 +420,7 @@ function renderEnVi() {
         </div>
         <div class="botonxtra">
           <span id="liveBadge" class="live-badge"><span class="dot">●</span> LIVE</span>
-          <button class="btn-icon" id="reloadBtn" title="Recargar canal">
-            <span class="material-symbols-outlined">refresh</span>
-          </button>
+          <button class="btn-icon" id="reloadBtn" title="Recargar canal"><span class="material-symbols-outlined">refresh</span></button>
         </div>
       </div>
     </div>
@@ -545,24 +433,29 @@ function renderEnVi() {
   const badge = document.getElementById('liveBadge');
   const sel = document.getElementById('canalSelector');
 
-  // populate select from p.canales
+  // Poblar canales desde envi.json
   sel.innerHTML = '';
-  (p.canales || []).forEach(ch => {
+  (p.canales || []).forEach(c => {
     const opt = document.createElement('option');
-    opt.value = ch.id;
-    opt.textContent = ch.label || ch.id;
+    opt.value = c.id;
+    opt.textContent = c.label || c.id;
     sel.appendChild(opt);
   });
 
-  const saved = localStorage.getItem('canalSeleccionado') || p.default || (p.canales && p.canales[0] && p.canales[0].id) || '';
+  const saved = localStorage.getItem('canalSeleccionado') || p.default || (p.canales[0]?.id || '');
   sel.value = saved;
-  // build iframe src using base_url
   iframe.src = `${p.base_url}${sel.value}`;
 
-  iframe.onload = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.add('visible'); }
-  iframe.onerror = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.remove('visible'); }
+  iframe.onload = () => {
+    if (loader) loader.style.display = 'none';
+    if (badge) badge.classList.add('visible');
+  };
+  iframe.onerror = () => {
+    if (loader) loader.style.display = 'none';
+    if (badge) badge.classList.remove('visible');
+  };
 
-  sel.addEventListener('change', (e) => {
+  sel.addEventListener('change', e => {
     const canal = e.target.value;
     localStorage.setItem('canalSeleccionado', canal);
     if (loader) loader.style.display = 'flex';
@@ -570,68 +463,15 @@ function renderEnVi() {
     iframe.src = `${p.base_url}${canal}`;
   });
 
-  document.getElementById('reloadBtn').addEventListener('click', () => {
+  const reloadBtn = document.getElementById('reloadBtn');
+  reloadBtn.addEventListener('click', () => {
     if (loader) loader.style.display = 'flex';
     if (badge) badge.classList.remove('visible');
     iframe.src = iframe.src;
   });
+
+  setTimeout(() => overlay.remove(), 1800);
 }
-
-/* Public renderPage */
-function setActiveTab(tabName, pushHistory=true) {
-  tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
-  localStorage.setItem(LS_TAB, tabName);
-  renderPage(tabName);
-  if (pushHistory) history.pushState({tab:tabName}, '', `#${tabName}`);
-}
-
-function renderPage(tabName) {
-  main.innerHTML = '';
-  if (tabName === 'images') renderImages();
-  else if (tabName === 'videos') renderVideos();
-  else renderEnVi();
-}
-
-/* ============================================================
-   [SECCIÓN 6] - YOUTUBE PLAYER HANDLING (preserved)
-   ============================================================ */
-
-let YT_ready = false;
-let YT_players = [];
-
-function onYouTubeIframeAPIReady() {
-  YT_ready = true;
-  YT_players = [];
-  document.querySelectorAll('iframe[src*="youtube.com"]').forEach((iframe, idx) => {
-    try {
-      const id = 'ytplayer_' + idx;
-      iframe.id = id;
-      const player = new YT.Player(id, {
-        events: {
-          'onStateChange': (e) => {
-            if (e.data === YT.PlayerState.PLAYING) {
-              YT_players.forEach(p => { if (p !== player) try { p.pauseVideo(); } catch(e){} });
-            }
-          }
-        }
-      });
-      YT_players.push(player);
-    } catch(e){ /* ignore if fails */ }
-  });
-}
-function initYouTubePlayers() {
-  if (window.YT && window.YT.Player) {
-    onYouTubeIframeAPIReady();
-    return;
-  }
-  if (document.querySelector('iframe[src*="youtube.com"]')) {
-    const script = document.createElement('script');
-    script.src = "https://www.youtube.com/iframe_api";
-    document.body.appendChild(script);
-    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-  }
-}
-
 /* ============================================================
    [SECCIÓN 7] - TABS, HISTORY, SWIPE GESTURES (fixes)
    ============================================================ */
@@ -671,25 +511,18 @@ main.addEventListener('touchend', (e) => {
 }, {passive:true});
 
 /* ============================================================
-   [SECCIÓN 8] - NOTIFICATION PANEL TOGGLE, CLEAR ALL
+   [SECCIÓN 8] - TABS & NAVEGACIÓN (sin swipe)
    ============================================================ */
 
-notifToggle.addEventListener('click', () => {
-  const open = notifPanel.classList.toggle('open');
-  notifPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
-  if (open) renderNotifPanel();
-});
+tabs.forEach(t => t.addEventListener('click', () => setActiveTab(t.dataset.tab)));
 
-clearAllBtn.addEventListener('click', () => {
-  const notifs = loadNotificationsFromLS().map(n=>n.id);
-  // mark all as removed permanently
-  const removed = getRemoved();
-  notifs.forEach(id => { if (!removed.includes(id)) removed.push(id); });
-  setRemoved(removed);
-  // clear shown list
-  setShown([]);
-  updateNotifBadge();
-  renderNotifPanel();
+const last = localStorage.getItem(LS_TAB) || 'envi';
+setActiveTab(last, false);
+history.replaceState({ tab: last }, '', `#${last}`);
+
+window.addEventListener('popstate', ev => {
+  const tab = (ev.state && ev.state.tab) || window.location.hash.replace('#', '') || localStorage.getItem(LS_TAB) || 'envi';
+  setActiveTab(tab, false);
 });
 
 /* ============================================================
@@ -723,27 +556,46 @@ async function watchNotificationsRealtime() {
 }
 
 /* ============================================================
-   [SECCIÓN 10] - INIT
+   [SECCIÓN 10] - INIT + PROTECCIONES APP-LIKE
    ============================================================ */
 
-(async function init() {
+(async function init(){
   await loadAllData();
   updateNotifBadge();
   renderNotifPanel();
   startNotifSequence();
   watchNotificationsRealtime();
+
+  // Bloqueos tipo App
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.documentElement.style.userSelect = 'none';
+
+  window.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && ['=', '+', '-', '0'].includes(e.key)) e.preventDefault();
+  }, { passive: false });
+
+  window.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+  window.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+  window.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+  window.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
+
+  // Evitar doble-tap zoom
+  let lastTouch = 0;
+  document.addEventListener('touchend', e => {
+    const now = Date.now();
+    if (now - lastTouch <= 300) e.preventDefault();
+    lastTouch = now;
+  }, { passive: false });
+
+  // Bloquear arrastre de imágenes
+  document.querySelectorAll('img').forEach(i => i.setAttribute('draggable', 'false'));
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 })();
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopNotifSequence();
   else startNotifSequence();
 });
-
-window.stv = {
-  loadAllData, PAGES, renderNotifPanel, startNotifSequence, stopNotifSequence,
-  getRemoved, getShown // helpers for debugging
-};
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(()=>{/* ignore */});
-}
