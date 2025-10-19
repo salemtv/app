@@ -1,9 +1,12 @@
-/* app.js v1.1
-   Version: v1.1 - Mejora de pestañas y sistema de notificaciones
-   - Conserva TODO el código original v1.0 no relacionado con notifs/tabs.
-   - Cambios puntuales: notificaciones (delay inicial, intervalo 3s, botón cierre individual,
-     persistencia en localStorage como "vista", eliminación en tiempo real desde panel)
-   - Añadida vigilancia periódica del JSON de notifs para inyectar nuevas notificaciones en tiempo real.
+/* app.js v1.2
+   Version: v1.2 - Corrección de bugs y ajustes solicitados
+   - Basado íntegramente en v1.1 (se conserva TODO el código no modificado)
+   - Cambios funcionales puntuales:
+     * Eliminado botón "Descartar" del panel (solo 'Abrir' y 'Eliminar')
+     * Eliminación permanente: al borrar una notificación desde el panel, se registra en LS_REMOVED para que
+       NUNCA vuelva a importarse o mostrarse (incluso si aparece en data/notifications.json)
+     * Toast: al mostrarse se marca automáticamente como "visto" (dismissed) y se oculta tras 3s (no queda fija)
+     * Watch realtime filtrando IDs eliminados para evitar reaparición
 */
 
 /* ============================
@@ -12,8 +15,9 @@
 
 const PAGES = {}; // se llenará con fetch desde data/*.json
 const LS_TAB = "stv_selected_tab";
-const LS_NOTIFS = "stv_notifications"; // fallback local if fetch fails
-const LS_DISMISSED = "stv_notif_dismissed";
+const LS_NOTIFS = "stv_notifications"; // copia local de data/notifications.json
+const LS_DISMISSED = "stv_notif_dismissed"; // notifs vistas (toast mostrado o marcado)
+const LS_REMOVED = "stv_notif_removed"; // notifs eliminadas permanentemente (desde panel)
 
 const main = document.getElementById('main');
 const tabs = document.querySelectorAll('.tab');
@@ -50,6 +54,8 @@ function daysBetween(dateIso) {
 }
 function getDismissed() { return JSON.parse(localStorage.getItem(LS_DISMISSED) || '[]'); }
 function setDismissed(arr){ localStorage.setItem(LS_DISMISSED, JSON.stringify(arr)); }
+function getRemoved() { return JSON.parse(localStorage.getItem(LS_REMOVED) || '[]'); }
+function setRemoved(arr) { localStorage.setItem(LS_REMOVED, JSON.stringify(arr)); }
 
 /* ---------------------------
    Load JSON data (images, videos, envi, notifications)
@@ -65,6 +71,16 @@ async function fetchJSON(path, fallback=null) {
   }
 }
 
+/* Cuando guardamos la copia local de notifs, siempre filtramos por removals
+   para garantizar que una notificación eliminada permanentemente no
+   reaparezca aunque exista en el JSON original. */
+function saveNotifsToLS(notifs) {
+  const removed = getRemoved();
+  const filtered = (notifs || []).filter(n => !removed.includes(n.id));
+  localStorage.setItem(LS_NOTIFS, JSON.stringify(filtered));
+}
+
+/* Carga inicial: lee data/*.json y guarda copia local de notifs (filtrando removals) */
 async function loadAllData() {
   const [images, videos, envi, notifs] = await Promise.all([
     fetchJSON('data/images.json', null),
@@ -73,31 +89,29 @@ async function loadAllData() {
     fetchJSON('data/notifications.json', null)
   ]);
 
-  let notifications = notifs;
-  if (!notifications) {
-    const ls = localStorage.getItem(LS_NOTIFS);
-    notifications = ls ? JSON.parse(ls) : [];
+  if (notifs) {
+    saveNotifsToLS(notifs);
   } else {
-    // Guardamos la copia local al cargar
-    localStorage.setItem(LS_NOTIFS, JSON.stringify(notifications));
+    // si no hay fetch, dejamos la copia local existente
   }
 
   PAGES.images = images || { title: 'Imágenes - STV', items: [] };
   PAGES.videos = videos || { title: 'Videos - STV', items: [] };
   PAGES.envi = envi || { title: 'EnVi', defaultStream: 'liga1max' };
-  return notifications;
+  return JSON.parse(localStorage.getItem(LS_NOTIFS) || '[]');
 }
 
 /* ---------------------------
    Notificaciones: carga, filtrado, render y secuencia rotativa
    --------------------------- */
 
-/* Mantengo la función loadNotificationsFromLS pero la uso coherentemente
-   para filtrar expiradas y manejar la persistencia */
+/* loadNotificationsFromLS: filtra expiradas y removidas */
 function loadNotificationsFromLS() {
   let arr = JSON.parse(localStorage.getItem(LS_NOTIFS) || '[]');
   const now = new Date();
+  const removed = getRemoved();
   arr = arr.filter(n => {
+    if (removed.includes(n.id)) return false;
     if (!n.created || n.expire_days == null) return true;
     const created = new Date(n.created);
     const expireAt = new Date(created.getTime() + (n.expire_days * 24*60*60*1000));
@@ -107,7 +121,7 @@ function loadNotificationsFromLS() {
   return arr;
 }
 
-/* updateNotifBadge: muestra número pendiente NO descartado (historial permanece) */
+/* updateNotifBadge: muestra número pendiente NO descartado y no removido */
 function updateNotifBadge() {
   const notifs = loadNotificationsFromLS();
   const dismissed = getDismissed();
@@ -120,13 +134,13 @@ function updateNotifBadge() {
   }
 }
 
-/* renderNotifPanel: panel histórico (muestra todo, permite eliminar en tiempo real) */
+/* renderNotifPanel: panel histórico (muestra todo excepto removals) */
 function renderNotifPanel() {
   const notifs = loadNotificationsFromLS();
-  const dismissed = getDismissed();
   notifList.innerHTML = '';
   if (notifs.length === 0) {
     notifList.innerHTML = `<div style="color:var(--color-muted);font-size:14px">No hay notificaciones</div>`;
+    updateNotifBadge();
     return;
   }
   notifs.forEach(n => {
@@ -141,7 +155,6 @@ function renderNotifPanel() {
       <div style="font-size:14px;color:var(--color-text)">${escapeHtml(n.body || n.content || '')}</div>
       <div class="meta"><div>${metaDate}</div><div>${expireLabel}</div></div>
       <div class="notif-actions">
-        <button class="btn-small" data-action="dismiss" data-id="${n.id}">${getDismissed().includes(n.id) ? 'Revelar' : 'Descartar'}</button>
         <button class="btn-small" data-action="open" data-id="${n.id}">Abrir</button>
         <button class="btn-small" data-action="delete" data-id="${n.id}">Eliminar</button>
       </div>
@@ -153,22 +166,23 @@ function renderNotifPanel() {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       const action = e.currentTarget.dataset.action;
-      if (action === 'dismiss') {
-        const dismissed = getDismissed();
-        if (!dismissed.includes(id)) dismissed.push(id);
-        setDismissed(dismissed);
-        updateNotifBadge();
-        renderNotifPanel();
-      } else if (action === 'open') {
+      if (action === 'open') {
         const all = loadNotificationsFromLS();
         const n = all.find(x => x.id === id);
         if (n) executeNotificationOpen(n);
       } else if (action === 'delete') {
-        // eliminar la notificación del historial y del almacenamiento (en tiempo real)
+        // eliminar permanentemente:
         let notifs = loadNotificationsFromLS();
         notifs = notifs.filter(x => x.id !== id);
+        // actualizar LS_NOTIFS (sin la notificación)
         localStorage.setItem(LS_NOTIFS, JSON.stringify(notifs));
-        // tambien quitarla de dismissed si existiera
+        // añadir a LS_REMOVED para que nunca vuelva a importarse
+        const removed = getRemoved();
+        if (!removed.includes(id)) {
+          removed.push(id);
+          setRemoved(removed);
+        }
+        // también quitarla de dismissed por limpieza
         const dismissed = getDismissed().filter(x => x !== id);
         setDismissed(dismissed);
         updateNotifBadge();
@@ -176,20 +190,28 @@ function renderNotifPanel() {
       }
     });
   });
+
+  updateNotifBadge();
 }
 
 /* show single toast (con botón de cerrar propio)
-   v1.1 behavior:
-   - Mark as dismissed/seen when user clicks close btn
-   - Each toast shows only una vez por id persisted en localStorage (dismissed list)
+   v1.2 behavior:
+   - Marca como dismissed automáticamente al mostrarse (para que no vuelva a aparecer)
+   - Se oculta automáticamente a los 3s
 */
 function showToastOnly(notif) {
   if (!notif || !notif.id) return;
-  // si ya fue descartada (vista) => NO mostrar
+  // si ya fue descartada (vista) o removida => NO mostrar
   const dismissed = getDismissed();
-  if (dismissed.includes(notif.id)) return;
+  const removed = getRemoved();
+  if (dismissed.includes(notif.id) || removed.includes(notif.id)) return;
 
-  // Limpiar timer previo si existe
+  // marcar como vista automáticamente al mostrarse
+  dismissed.push(notif.id);
+  setDismissed(dismissed);
+  updateNotifBadge();
+
+  // limpiar timer previo si existe
   if (activeToastTimeout) {
     clearTimeout(activeToastTimeout);
     activeToastTimeout = null;
@@ -206,13 +228,15 @@ function showToastOnly(notif) {
 
   const closeBtn = toastEl.querySelector('.toast-close');
   closeBtn.addEventListener('click', () => {
-    // marcar como descartada (visto) para que no vuelva a aparecer
-    const dismissedNow = getDismissed();
-    if (!dismissedNow.includes(notif.id)) dismissedNow.push(notif.id);
-    setDismissed(dismissedNow);
-    updateNotifBadge();
+    // cerrar toast (la notificación ya está marcada como vista)
     hideToast();
   });
+
+  // se oculta automáticamente a los 3s
+  activeToastTimeout = setTimeout(() => {
+    hideToast();
+    activeToastTimeout = null;
+  }, 3000);
 }
 
 /* hide toast */
@@ -225,12 +249,10 @@ function hideToast() {
 }
 
 /* run rotation over pending notifs:
-   v1.1 new logic:
-   - Espera inicial de 5s tras entrar a la web.
+   v1.2 new logic:
+   - Espera inicial de 5 segundos tras entrar a la web.
    - Muestra notificación por notificación con intervalo de 3s entre ellas.
-   - Marca la notificación como "vista" **solo** si el usuario pulsa el cierre; si no la marca el usuario,
-     se considera "mostrada" pero no descartada (NO se añade a dismissed automáticamente).
-   - Para evitar loops: no se vuelve a mostrar una notificación ya marcada en dismissed.
+   - No re-muestra notificaciones que ya estén en dismissed o removed.
 */
 let notifSequenceRunning = false;
 async function startNotifSequence() {
@@ -247,19 +269,14 @@ async function startNotifSequence() {
   await new Promise(r => setTimeout(r, 5000));
 
   for (let i = 0; i < notifs.length; i++) {
-    // antes de mostrar comprobar si ya fue descartada en meantime (ej. por panel)
+    // comprobar si ya fue descartada/eliminada en meantime (ej. por panel)
     const dismissed = getDismissed();
-    if (dismissed.includes(notifs[i].id)) continue;
+    const removed = getRemoved();
+    if (dismissed.includes(notifs[i].id) || removed.includes(notifs[i].id)) continue;
 
     showToastOnly(notifs[i]);
-    // esperar 3s mostrando (usuario puede cerrar antes)
-    await new Promise(r => {
-      activeToastTimeout = setTimeout(r, 3000);
-    });
-    // ocultar (si aún visible)
-    hideToast();
-    // pequeño gap de 500ms antes de la siguiente
-    await new Promise(r => setTimeout(r, 500));
+    // esperar 3s (mostrando); ya el showToastOnly oculta a los 3s, pero guardamos un gap
+    await new Promise(r => setTimeout(r, 3500));
   }
 
   notifSequenceRunning = false;
@@ -334,7 +351,7 @@ function executeNotificationOpen(n) {
 
 /* ---------------------------
    SPA rendering: Images, Videos, EnVi
-   (Mantengo todo exactamente como v1.0)
+   (Mantengo todo exactamente como v1.1/v1.0)
    --------------------------- */
 function setActiveTab(tabName, pushHistory=true) {
   tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
@@ -616,15 +633,22 @@ notifToggle.addEventListener('click', () => {
 
 clearAllBtn.addEventListener('click', () => {
   const notifs = loadNotificationsFromLS().map(n=>n.id);
-  setDismissed(notifs);
+  // marcar todos como removed/permanente
+  const removed = getRemoved();
+  notifs.forEach(id => {
+    if (!removed.includes(id)) removed.push(id);
+  });
+  setRemoved(removed);
+  // limpiar dismissed
+  setDismissed([]);
   updateNotifBadge();
   renderNotifPanel();
 });
 
 /* ---------------------------
-   Real-time watch for new notifications (v1.1)
+   Real-time watch for new notifications (v1.2)
    - Cada 15s consulta data/notifications.json y compara ids.
-   - Si hay nuevas notificaciones -> las guarda en localStorage y dispara showToastOnly para cada nueva.
+   - Si hay nuevas notificaciones -> las guarda en localStorage (sin incluir removed) y dispara showToastOnly para cada nueva.
    --------------------------- */
 let watchInterval = null;
 async function watchNotificationsRealtime() {
@@ -634,19 +658,22 @@ async function watchNotificationsRealtime() {
   watchInterval = setInterval(async () => {
     const latest = await fetchJSON('data/notifications.json', null);
     if (!latest) return;
+    // filtrar out removals
+    const removed = getRemoved();
+    const latestFiltered = latest.filter(n => !removed.includes(n.id));
     const stored = loadNotificationsFromLS();
     const storedIds = stored.map(s => s.id);
-    // detectar nuevos
-    const newItems = latest.filter(l => !storedIds.includes(l.id));
+    // detectar nuevos (ids en latestFiltered que no estén en stored)
+    const newItems = latestFiltered.filter(l => !storedIds.includes(l.id));
     if (newItems.length > 0) {
-      // actualizar copia local (mantener expirations, etc.)
-      const merged = [...latest];
+      // actualizar copia local (mantener expirations, etc.), evitando duplicados
+      const merged = [...stored];
+      newItems.forEach(n => merged.push(n));
       localStorage.setItem(LS_NOTIFS, JSON.stringify(merged));
       updateNotifBadge();
       renderNotifPanel();
       // mostrar inmediatamente en pantalla (solo los no descartados)
       newItems.forEach(n => {
-        // si no está descartado, mostrar en toast
         if (!getDismissed().includes(n.id)) {
           // mostrar con pequeño delay para no sobreponer múltiples toasts instantáneos
           setTimeout(() => showToastOnly(n), 300);
@@ -676,7 +703,8 @@ document.addEventListener('visibilitychange', () => {
 
 /* Expose functions for debugging */
 window.stv = {
-  loadAllData, PAGES, renderNotifPanel, startNotifSequence, stopNotifSequence, executeNotificationOpen
+  loadAllData, PAGES, renderNotifPanel, startNotifSequence, stopNotifSequence, executeNotificationOpen,
+  getRemoved, getDismissed // helpers para debug
 };
 
 /* Service Worker register preserves your sw.js */
