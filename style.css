@@ -149,7 +149,7 @@ footer{
   height: 100vh;
   background: black;
   display: none;
-  flex-direction: column;
+  flex-direction:;
   align-items: center;
   justify-content: flex-start;
   z-index: 9999;
