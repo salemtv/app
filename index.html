@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Prevent pinch/zoom on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <!-- App iOS -->
   <link rel="apple-touch-icon" href="https://iili.io/FbndiJt.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -15,63 +16,49 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="icon" type="image/png" href="https://iili.io/FbnBO4j.png">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <meta name="theme-color" content="#6a5acd" />
-
-  <!-- CSS externalizado -->
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0e0c1a" />
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <div class="left">
+    <div class="center">
       <img src="https://iili.io/FPk2m9n.png" alt="Logo" />
-      <div class="title">STV</div>
-    </div>
-
-    <div class="nav-right">
-      <button class="notif-btn" id="notifToggle" title="Notificaciones">
-        <span class="material-symbols-outlined">notifications</span>
-        <span id="notifCount" class="notif-badge" style="display:none">0</span>
-      </button>
+      <div class="title"></div>
     </div>
   </header>
 
+  <!-- sticky tabs: EnVi first (default), Imágenes second -->
   <div class="tabs" id="tabs">
     <div class="tabs-inner">
-      <div class="tab" data-tab="images">Imágenes</div>
-      <div class="tab" data-tab="videos">Videos</div>
-      <div class="tab active" data-tab="envi">EnVi</div>
+      <div class="tab active" data-tab="envi">En vivo</div>
+      <div class="tab" data-tab="images">Peliculas</div>
     </div>
   </div>
 
-  <main id="main"></main>
+  <main id="main">
+    <!-- contenido dinámico -->
+  </main>
 
-  <div class="notif-panel" id="notifPanel" aria-hidden="true">
-    <h4>Notificaciones</h4>
-    <div id="notifList"></div>
-    <div style="display:flex;justify-content:flex-end;margin-top:8px">
-      <button class="btn-small" id="clearAll">Limpiar todas</button>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
+  <!-- Modal fullscreen para videos asociados a imagenes -->
   <div id="modalFull" class="modal-full" aria-hidden="true">
-    <div class="modal-inner" id="modalInner"></div>
-    <button class="modal-close" id="modalClose">Cerrar</button>
+    <div class="modal-inner" id="modalInner">
+      <!-- Title inserted dynamically -->
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-media" id="modalMedia"></div>
+    </div>
+    <button class="modal-close" id="modalClose" title="Cerrar">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
   </div>
 
-  <footer>
-    <div style="display:flex;justify-content:center;padding:10px">
-      <div class="anuncio">
-        <img class="profile" src="https://th.bing.com/th/id/OIG2.Ls14.mrVPhRAUIQyj_Y8?dpr=1&pid=ImgDetMain" alt="Sam">
-        <a href="https://instagram.com/yefrysammir" target="_blank" style="color:inherit">@yefrysammir</a>
-        <span style="margin-left:10px;color:var(--color-muted)">&nbsp;|&nbsp;Powered by STV</span>
-      </div>
+ <footer>
+<div style="display:flex;justify-content:center;padding:1rem">
+    <div class="anuncio">
+      <img class="profile" src="https://th.bing.com/th/id/OIG2.Ls14.mrVPhRAUIQyj_Y8?dpr=1&pid=ImgDetMain" alt="Salem">
+      <span>Powered by Salem</span>
     </div>
-    &copy; 2025 STV. Todos los derechos reservados.
+  </div>
   </footer>
-
-  <!-- JS externalizado -->
-  <script src="app.js" defer></script>
+<script src="script.js"></script>
 </body>
 </html>
