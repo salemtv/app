@@ -108,57 +108,108 @@ function renderImages(){
 }
 
 /* ---------------- Modal ---------------- */
-function openImagePlayer(item){
+/* ---------------- Modal (versión adaptable mejorada para iOS / horizontal) ---------------- */
+function openImagePlayer(item) {
   const src = item.video || item.iframe || item.player || item.srcVideo || '';
   if (!src) return;
   const title = item.title || item.name || item.id || '';
 
+  // ✅ Redirección directa en iOS si es archivo local
   const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  if (isiOS && src.match(/\.(mp4|mov|m4v)(\?|$)/i)) { window.location.href = src; return; }
+  if (isiOS && src.match(/\.(mp4|mov|m4v)(\?|$)/i)) {
+    window.location.href = src;
+    return;
+  }
 
   modalTitle.textContent = title;
   modalMedia.innerHTML = '';
 
+  let media;
+
+  // === Detecta si es video o iframe ===
   if (src.match(/\.(mp4|webm|ogg)(\?|$)/i)) {
-    const v = document.createElement('video');
-    v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true;
-    v.style.maxHeight='100%';
-    v.setAttribute('controlsList','nodownload');
-    modalMedia.appendChild(v);
-    try { v.play().catch(()=>{}); } catch(e) {}
+    media = document.createElement('video');
+    media.src = src;
+    media.controls = true;
+    media.autoplay = true;
+    media.playsInline = true;
+    media.setAttribute('controlsList', 'nodownload');
   } else {
-    const iframe = document.createElement('iframe');
-    iframe.src = src.includes('youtube.com') && !src.includes('enablejsapi')
+    media = document.createElement('iframe');
+    media.src = src.includes('youtube.com') && !src.includes('enablejsapi')
       ? src + (src.includes('?') ? '&enablejsapi=1' : '?enablejsapi=1')
       : src;
-    iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
-    iframe.setAttribute('allowfullscreen','');
-    iframe.style.border='none';
-    modalMedia.appendChild(iframe);
+    media.allow = 'autoplay; encrypted-media; picture-in-picture';
+    media.setAttribute('allowfullscreen', '');
+    media.style.border = 'none';
   }
 
+  // ✅ Ajuste visual perfecto para fullscreen
+  media.style.width = '100%';
+  media.style.height = '100%';
+  media.style.objectFit = 'contain';
+  modalMedia.style.padding = '1rem';
+  modalMedia.style.display = 'flex';
+  modalMedia.style.alignItems = 'center';
+  modalMedia.style.justifyContent = 'center';
+  modalMedia.style.background = 'black'; // elimina fondo gris
+  modalMedia.appendChild(media);
+
+  // Mostrar modal
   modalFull.classList.add('active');
-  modalFull.setAttribute('aria-hidden','false');
+  modalFull.setAttribute('aria-hidden', 'false');
   document.body.classList.add('no-scroll');
+
+  // Ajustar cada vez que cambia orientación
+  adjustModalMedia();
+  window.addEventListener('resize', adjustModalMedia);
+  window.addEventListener('orientationchange', adjustModalMedia);
 }
 
-function closeModal(){
+function adjustModalMedia() {
+  const container = modalMedia;
+  const media = container.querySelector('video, iframe');
+  if (!media) return;
+
+  // 🧭 Mantener el video centrado y sin espacio gris
+  container.style.padding = '1rem';
+  container.style.display = 'flex';
+  container.style.alignItems = 'center';
+  container.style.justifyContent = 'center';
+
+  media.style.width = '100%';
+  media.style.height = '100%';
+  media.style.objectFit = 'contain';
+  media.style.maxHeight = 'calc(100vh - 3.5rem)'; // evita que tape el título/botón
+}
+
+function closeModal() {
   const media = modalMedia.querySelector('video, iframe');
-  if (media && media.tagName === 'VIDEO') { try { media.pause(); } catch(e){} media.src = ''; }
+  if (media && media.tagName === 'VIDEO') {
+    try { media.pause(); } catch (e) { }
+    media.src = '';
+  }
   if (media && media.tagName === 'IFRAME') {
-    try { media.contentWindow.postMessage('{"event":"command","func":"stopVideo","args":""}', '*'); } catch(e){}
+    try {
+      media.contentWindow.postMessage('{"event":"command","func":"stopVideo","args":""}', '*');
+    } catch (e) { }
     media.src = 'about:blank';
   }
   modalMedia.innerHTML = '';
   modalTitle.textContent = '';
   modalFull.classList.remove('active');
-  modalFull.setAttribute('aria-hidden','true');
+  modalFull.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('no-scroll');
+
+  // ✅ Limpia listeners para evitar duplicados
+  window.removeEventListener('resize', adjustModalMedia);
+  window.removeEventListener('orientationchange', adjustModalMedia);
 }
 
 modalClose.addEventListener('click', closeModal);
-modalFull.addEventListener('click', (e)=> { if (e.target === modalFull) closeModal(); });
-
+modalFull.addEventListener('click', (e) => {
+  if (e.target === modalFull) closeModal();
+});
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
   const p = PAGES.envi || {title:'EnVi', defaultStream:'liga1max'};
