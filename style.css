@@ -149,13 +149,20 @@ footer{
     }
     .modal-full.active { display:flex; }
     .modal-inner {
-      width:100%; height:100%; max-height:100%; display:flex; flex-direction:column;
-      align-items:center; justify-content:flex-start; position:relative; padding:18px;
+    width:100%;
+    height:100%;
+    max-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    padding:18px;
     }
     .modal-title {
-      width:100%; color:var(--color-text); font-weight:700; font-size:18px;
-      margin-bottom:12px; text-align:center;
-      background:transparent;
+    position: absolute; top: 16px;left:0;right:0;width:100%; color:var(--color-text); font-weight:700; font-size:18px;
+    text-align:center;
+    background:transparent;z-index: 10;
     }
     .modal-media {
       width:100%; height:calc(100% - 64px); display:flex; align-items:center; justify-content:center;
