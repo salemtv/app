@@ -147,11 +147,11 @@ footer{
   inset: 0;
   width: 100vw;
   height: 100vh;
-  background: black;
+  background: var(--color-primary);
   display: none;
   flex-direction:;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   z-index: 9999;
   overflow: hidden;
 }
@@ -167,7 +167,7 @@ footer{
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: var(--color-primary);
+  background: transparent;
   backdrop-filter: blur(6px);
   position: relative;/**sticky;**/
   /**top: 0;**/
@@ -208,7 +208,7 @@ footer{
 .modal-media {
   flex: 1;
   width: 100%;
-height:calc(100% - 60px);
+  height:calc(100% - 60px);
   display: flex;
   justify-content: center;
   align-items: center;
