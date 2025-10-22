@@ -167,7 +167,7 @@ footer{
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-primary);
   backdrop-filter: blur(6px);
   position: relative;/**sticky;**/
   /**top: 0;**/
@@ -214,6 +214,7 @@ footer{
   padding: 1rem; /* ← tu margen de seguridad */
   box-sizing: border-box;
   overflow: hidden;
+background: var(--color-primary);
 }
 
 /* Video o iframe 100% adaptativo */
@@ -223,7 +224,7 @@ footer{
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  background: black;
+  background: var(--color-primary);
   border: none;
   border-radius: 0;
   object-fit: contain; /* evita deformaciones */
