@@ -2,8 +2,8 @@ const CACHE_NAME = 'stv-cache-v1';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/app.js',
+  '/style.css',
+  '/script.js',
   '/manifest.json',
   '/data/images.json',
   '/favicon.ico'
