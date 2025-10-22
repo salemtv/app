@@ -169,8 +169,8 @@ footer{
   padding: 1rem;
   background: transparent;
   backdrop-filter: blur(6px);
-  position: relative;/**sticky;**/
-  /**top: 0;**/
+  position: sticky;
+  top: 0;
   z-index: 10;
 }
 
