@@ -1,21 +1,3 @@
 {
-  "title": "EnVi",
-  "base_url": "https://streamtp22.com/global1.php?stream=",
-  "default": "liga1max",
-  "canales": [
-    { "id": "espn", "label": "ESPN" },
-    { "id": "espn2", "label": "ESPN2" },
-    { "id": "espn3", "label": "ESPN3" },
-    { "id": "disney2", "label": "Disney+" },
-    { "id": "beinsport_xtra_espanol", "label": "BeiNsport" },
-    { "id": "dsports", "label": "DSports" },
-    { "id": "dsports2", "label": "DSports2" },
-    { "id": "dsportsplus", "label": "DSports+" },
-    { "id": "golperu", "label": "Gol Perú" },
-    { "id": "liga1max", "label": "L1 Max" },
-    { "id": "movistar", "label": "Movistar" },
-    { "id": "premiere1", "label": "Premiere 1" },
-    { "id": "premiere2", "label": "Premiere 2" },
-    { "id": "premiere3", "label": "Premiere 3" }
-  ]
+  "title": "Canales"
 }
