@@ -214,7 +214,7 @@ footer{
         margin: 0;
         display: block;
         padding: 0!important;
-        object-fit: cover;
+        object-fit: contain;
     }
     .modal-close {
         background:transparent;
