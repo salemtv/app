@@ -52,7 +52,7 @@ width: 100%;
     /* Sticky Header */
     header{
       background-color:var(--color-primary);
-      padding:0.6rem;
+      padding:1rem;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -68,7 +68,7 @@ height: auto;
     /* Tabs sticky under header */
     .tabs {
       position:sticky;
-	  top:63px; /* header height ~72 */
+	  top:75px; /* header height ~72 */
       z-index:50;
       background:rgba(14,12,26,.5);
       padding:8px 1rem;
