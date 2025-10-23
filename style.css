@@ -142,11 +142,15 @@ footer{
 }
 /* Modal fullscreen para videos asociados a imagenes - full-screen app-like */
     .modal-full {
-      position:fixed; inset:0; width:100vw; height:100vh;
-      background: rgba(14,12,26,.5);
-      backdrop-filter: blur(4px);
-      display:none; align-items:center; justify-content:center; z-index:9999;
-      overflow:hidden;
+        position:fixed;
+        inset:0; width:100vw;
+        height:100vh;
+        background: black;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:9999;
+        overflow:hidden;
     }
     .modal-full.active { display:flex; }
     .modal-inner {
@@ -170,7 +174,7 @@ footer{
         justify-content: space-between;
         z-index: 10;
         padding: 1rem;
-        position: sticky;
+        position: absolute!important;
         top: 0;
         left: 0;
         right: 0;
@@ -197,12 +201,10 @@ footer{
         height:100%;
         min-height: auto;
         max-height: 100%;
-        background: rgba(14,12,26,.5);
-        backdrop-filter: blur(4px);
+        background: black;
         border-radius:0;
         border: 0;
         margin: 0;
-        margin-top: 55px!important;
         display: block;
         padding: 0!important;
         object-fit: contain;
