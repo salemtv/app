@@ -190,10 +190,11 @@ footer{
         width:100%;
         min-width: 100%;
         max-width: 100%;
-        height:100%;
+        height:auto;
         min-height auto;
         max-height: 100%;
-        background:black!important;
+        background: rgba(14,12,26,.5);
+        backdrop-filter: blur(4px);
         border-radius:0;
         border: 0;
         margin: 0;
@@ -219,6 +220,9 @@ footer{
       .modal-close .material-symbols-outlined { font-size:26px; }
       .modal-inner { padding:0; }
       .modal-title { font-size:; }
+        .modal-media video, .modal-media iframe {
+        height: 98%!important;
+        }
     }
 
   @keyframes focusHighlight {
