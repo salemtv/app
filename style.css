@@ -160,6 +160,11 @@ footer{
     position:relative;
     padding:0;
     }
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        }
     .modal-title {
     position: absolute; top: 1rem;left:1rem;width:100%; color:var(--color-text); font-weight:700; font-size:18px;
     text-align:center;
