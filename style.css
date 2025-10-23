@@ -177,7 +177,6 @@ footer{
     }
     .modal-media {
         width:100vw;
-        margin: 0;
         padding: 0;
         height: auto;
         display:flex;
@@ -192,7 +191,6 @@ footer{
         max-width: 100%;
         height:auto;
         min-height auto;
-        max-height: 100%;
         background: rgba(14,12,26,.5);
         backdrop-filter: blur(4px);
         border-radius:0;
