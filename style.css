@@ -170,6 +170,10 @@ footer{
         justify-content: space-between;
         z-index: 10;
         padding: 1rem;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
         }
     .modal-title {
     color:var(--color-text); font-weight:700; font-size:var(--font);
@@ -190,7 +194,7 @@ footer{
         width:100%;
         min-width: 100%;
         max-width: 100%;
-        height:auto;
+        height:100%;
         min-height: auto;
         max-height: 100%;
         background: rgba(14,12,26,.5);
@@ -198,6 +202,7 @@ footer{
         border-radius:0;
         border: 0;
         margin: 0;
+        margin-top: 55px!important;
         display: block;
         padding: 0!important;
         object-fit: contain;
