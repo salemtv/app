@@ -55,11 +55,17 @@
       "image": "https://image.tmdb.org/t/p/original/hkHDmkL5abn3P005v6xfEG3ZyYT.jpg",
       "video": "https://cdn.flick.vip/9615/index.m3u8?v=920888986"
     },
-{
+    {
       "id": ["Más rápido, Más furioso", "Mas rapido, mas furioso"],
       "title": "Mas rapido, mas furioso",
       "image": "https://image.tmdb.org/t/p/original/8o3Py5qAgOUm0seWHmxpLwQmb1L.jpg",
       "video": "https://cdn.flick.vip/584/index.m3u8?v=1031811144"
+    },
+    {
+      "id": ["Rápido y furioso", "Rapido y furioso"],
+      "title": "Rápido y furioso",
+      "image": "https://image.tmdb.org/t/p/original/zFR949B0hxdgi0vljf8tCJiZ65z.jpg",
+      "video": "https://cdn.flick.vip/9799/index.m3u8?v=795114391"
     }
   ]
 }
