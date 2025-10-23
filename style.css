@@ -202,6 +202,7 @@ footer{
         min-height: auto;
         max-height: 100%;
         background: black;
+        background-color: black!important;
         border-radius:0;
         border: 0;
         margin: 0;
