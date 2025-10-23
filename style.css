@@ -10,6 +10,16 @@
 	  --font: 1rem;
 	  --font-xs: 0.8rem;
     }
+    .modal-media iframe {
+    -webkit-background-color: #000000!important; /* Safari interno */
+    -webkit-media-controls-background: #000000 !important; /* evita panel gris */
+    -webkit-media-controls-panel: #000000 !important;
+    -webkit-media-controls: #000000 !important;
+        }
+    .modal-media video {
+    background-color: #101820 !important; /* color personalizado */
+    -webkit-mask-image: -webkit-radial-gradient(white, black)!important;
+    }
 
     /* Global reset + app-like behavior */
     *{box-sizing:border-box;margin:0;padding:0;text-decoration:none}
