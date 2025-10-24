@@ -44,10 +44,10 @@
       "video": "https://cdn.flick.vip/51497/index.m3u8?v=1379117124"
     },
 {
-      "id": ["Rapidos y Furiosos", "Rápidos y Furiosos"],
+      "id": ["Rapidos y Furiosos 4", "Rápidos y Furiosos 4"],
       "title": "Rápidos y Furiosos",
-      "image": "https://image.tmdb.org/t/p/original/b4oE1Bw6KmON4qNIfjgJbVYkOWZ.jpg",
-      "video": "https://cdn.flick.vip/13804/index.m3u8?v=6543632054"
+      "image": "https://image.tmdb.org/t/p/original/bBioDtcG94rhvWnBE45yPUdgExi.jpg",
+      "video": "https://cdn.flick.vip/724495/index.m3u8?v=2970974384"
     },
 {
       "id": ["Rapido y Furioso: Reto Tokyo", "Rápido y Furioso: Reto Tokyo"],
@@ -90,6 +90,18 @@
       "title": "El Conjuro",
       "image": "https://image.tmdb.org/t/p/original/10ir0eISr3p1MF1mjZwGTx7u4vv.jpg",
       "video": "https://cdn.flick.vip/138843/index.m3u8?v=1248680745"
+    },
+    {
+      "id": "La casa de Cera",
+      "title": "La casa de Cera",
+      "image": "https://image.tmdb.org/t/p/original/2LQS9JNfbRlsalAe2BlTDXquSyH.jpg",
+      "video": "https://cdn.flick.vip/10066/index.m3u8?v=388850121"
+    },
+    {
+      "id": "La casa bajo el agua",
+      "title": "La casa bajo el agua",
+      "image": "https://image.tmdb.org/t/p/original/dNjqvdsSulP3FjCwTcCUinQ6nvO.jpg",
+      "video": "https://cdn.flick.vip/672582/index.m3u8?v=1749890549"
     }
   ]
 }
