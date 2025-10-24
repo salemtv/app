@@ -154,7 +154,7 @@ footer{
         position:fixed;
         inset:0; width:100vw;
         height:100vh;
-        background: black;
+        background: var(--color-primary);
         display:none;
         align-items:center;
         justify-content:center;
