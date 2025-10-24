@@ -64,7 +64,7 @@ function renderImages(){
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
   const searchWrap = document.createElement('div');
   searchWrap.style.marginBottom = '12px';
-  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Buscar pelicula..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
+  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Search movie..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
   container.appendChild(searchWrap);
 
   const grid = document.createElement('div');
