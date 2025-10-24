@@ -11,12 +11,12 @@
 	  --font-xs: 0.8rem;
     }
     .modal-media iframe, .modal-media video {
-    -webkit-background-color: #000000; /* Safari interno */
-    -webkit-media-controls-background: #000000 !important; /* evita panel gris */
-    -webkit-media-controls-panel: #000000 !important;
-    -webkit-media-controls: #000000 !important;
-    background-color: #000000 !important; /* color personalizado */
-    -webkit-mask-image: -webkit-radial-gradient(black, black)!important;
+    -webkit-background-color: var(--color-primary); /* Safari interno */
+    -webkit-media-controls-background: var(--color-primary)!important; /* evita panel gris */
+    -webkit-media-controls-panel: var(--color-primary)!important;
+    -webkit-media-controls: var(--color-primary)!important;
+    background-color: var(--color-primary)!important; /* color personalizado */
+    -webkit-mask-image: -webkit-radial-gradient(var(--color-primary), var(--color-primary))!important;
     }
 
     /* Global reset + app-like behavior */
