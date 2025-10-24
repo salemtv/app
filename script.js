@@ -36,8 +36,8 @@ async function loadAllData(){
     fetchJSON('data/envi.json', null)
   ]);
 
-  PAGES.images = images || {title:'Peliculas', items:[]};
-  PAGES.envi = envi || {title:'En vivo', defaultStream:'liga1max'};
+  PAGES.images = images || {title:'Imagenes', items:[]};
+  PAGES.envi = envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
 
   renderPage(localStorage.getItem(LS_TAB) || 'envi');
 }
@@ -53,7 +53,8 @@ function setActiveTab(tabName, pushHistory=true){
 function renderPage(tabName){
   main.innerHTML = '';
   if (tabName === 'images') renderImages();
-  else renderEnVi();
+  else if (tabName === 'envi2') renderEnVi2(); // 👈 NUEVA FUNCIÓN
+  else renderEnVi(); // envi original
 }
 
 /* ---------------- Images ---------------- */
@@ -161,7 +162,7 @@ modalFull.addEventListener('click', (e)=> { if (e.target === modalFull) closeMod
 
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
-  const p = PAGES.envi || {title:'EnVi', defaultStream:'liga1max'};
+  const p = PAGES.envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
   const container = document.createElement('div');
   container.innerHTML = `
     <h3 style="margin-bottom:8px">${p.title}</h3>
@@ -229,7 +230,7 @@ function renderEnVi(){
   const iframe = document.getElementById('videoIframe');
   const loader = document.getElementById('loader');
   const badge = document.getElementById('liveBadge');
-  const canalSaved = localStorage.getItem('canalSeleccionado') || p.defaultStream || 'liga1max';
+  const canalSaved = localStorage.getItem('canalSeleccionado') || p.defaultStream || 'foxsports';
   iframe.src = `https://la14hd.com/vivo/canales.php?stream=${canalSaved}`;
   iframe.onload = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.add('visible'); }
 
@@ -253,7 +254,7 @@ function initCustomSelector() {
   const loader = document.getElementById('loader');
   const badge = document.getElementById('liveBadge');
 
-  const canalSaved = localStorage.getItem('canalSeleccionado') || 'liga1max';
+  const canalSaved = localStorage.getItem('canalSeleccionado') || 'foxsports';
   const currentOption = options.querySelector(`[data-value="${canalSaved}"]`);
   if (currentOption) text.textContent = currentOption.textContent;
 
@@ -278,7 +279,124 @@ function initCustomSelector() {
     if (!custom.contains(e.target)) options.classList.add('hidden');
   });
 }
+/* ---------------- EnVi 2 ---------------- */
+function renderEnVi2(){
+  const p = {title:'Resto del Mundo', defaultStream:'history'};
+  const container = document.createElement('div');
+  container.innerHTML = `
+    <h3 style="margin-bottom:8px">${p.title}</h3>
+    <div class="iframe-container">
+      <div class="loader" id="loader2"><span></span></div>
+      <iframe id="videoIframe2" allow="picture-in-picture" playsinline webkit-playsinline allowfullscreen></iframe>
+    </div>
+    <div class="controls" style="margin-top:8px">
+      <div class="custom-selector" id="canalSelectorCustom2">
+        <div class="selector-display">
+          <span style="font-size: 20px" class="material-symbols-outlined">tv</span>
+          <span class="selected-text">History</span>
+          <span class="material-symbols-outlined arrow">expand_more</span>
+        </div>
+        <div class="selector-options hidden">
+<div data-value="americatv">America TV</div>
+<div data-value="animalplanet">Animal Planet</div>
+<div data-value="atv">ATV</div>
+<div data-value="axn">AXN</div>
+<div data-value="cartoonnetwork">Cartoon Network</div>
+<div data-value="cinecanal">CINECANAL</div>
+<div data-value="cinemax">CINEMAX</div>
+<div data-value="discoverykids">Discovery Kids</div>
+<div data-value="discoverychannel">Discovery Channel</div>
+<div data-value="discoveryhyh">Discovery H&H</div>
+<div data-value="distritocomedia">Distrito Comedia</div>
+<div data-value="disneychannel">Disney Channel</div>
+<div data-value="disneyjr">Disney Junior</div>
+<div data-value="fx">FX</div>
 
+<div data-value="goldenedge">GOLDEN EDGE</div>
+<div data-value="goldenplus">GOLDEN PLUS</div>
+<div data-value="goldenpremier">GOLDEN PREMIER</div>
+<div data-value="history">History</div>
+<div data-value="history2">History 2</div>
+<div data-value="idinvestigation">ID Investigation</div>
+<div data-value="latina">Latina</div>
+<div data-value="paramountchannel">PARAMOUNT TV</div>
+<div data-value="natgeo">NAT GEO</div>
+<div data-value="nick">Nickelodeon</div>
+<div data-value="nickjr">Nickelodeon JR</div>
+<div data-value="space">Space</div>
+<div data-value="starchannel">Star Channel</div>
+<div data-value="studiouniversal">Studio Universal</div>
+<div data-value="telemundo51">Telemundo Miami</div>
+<div data-value="telemundopuertorico">Telemundo PR</div>
+<div data-value="tnt">TNT</div>
+<div data-value="tnt">TNT Series</div>
+<div data-value="tooncast">TOONCAST</div>
+<div data-value="universalchannel">UNIVERSAL TV</div>
+<div data-value="willax">Willax TV</div>
+        </div>
+      </div>
+      <div class="botonxtra">
+        <span id="liveBadge2" class="live-badge"><span class="dot">●</span> LIVE</span>
+        <button class="btn-icon" id="reloadBtn2" title="Recargar canal">
+          <span class="material-symbols-outlined">autoplay</span>
+        </button>
+      </div>
+    </div>
+  `;
+  main.appendChild(container);
+
+  const iframe = document.getElementById('videoIframe2');
+  const loader = document.getElementById('loader2');
+  const badge = document.getElementById('liveBadge2');
+  const canalSaved = localStorage.getItem('canalSeleccionado2') || p.defaultStream || 'history';
+  iframe.src = `https://embed.saohgdasregions.fun/embed/${canalSaved}.html`;
+  iframe.onload = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.add('visible'); }
+
+  document.getElementById('reloadBtn2').addEventListener('click', () => {
+    if (loader) loader.style.display = 'flex';
+    if (badge) badge.classList.remove('visible');
+    iframe.src = iframe.src.split('?')[0] + '?_=' + Date.now();
+  });
+
+  initCustomSelector2();
+}
+
+/* ---------------- Custom Selector 2 ---------------- */
+function initCustomSelector2() {
+  const custom = document.getElementById('canalSelectorCustom2');
+  if (!custom) return;
+  const display = custom.querySelector('.selector-display');
+  const options = custom.querySelector('.selector-options');
+  const text = custom.querySelector('.selected-text');
+  const iframe = document.getElementById('videoIframe2');
+  const loader = document.getElementById('loader2');
+  const badge = document.getElementById('liveBadge2');
+
+  const canalSaved = localStorage.getItem('canalSeleccionado2') || 'history';
+  const currentOption = options.querySelector(`[data-value="${canalSaved}"]`);
+  if (currentOption) text.textContent = currentOption.textContent;
+
+  display.addEventListener('click', () => {
+    options.classList.toggle('hidden');
+  });
+
+  options.querySelectorAll('div').forEach(opt => {
+    opt.addEventListener('click', e => {
+      const value = e.target.dataset.value;
+      const label = e.target.textContent;
+      text.textContent = label;
+      options.classList.add('hidden');
+      localStorage.setItem('canalSeleccionado2', value);
+      if (loader) loader.style.display = 'flex';
+      if (badge) badge.classList.remove('visible');
+      iframe.src = `https://embed.saohgdasregions.fun/embed/${value}.html`;
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!custom.contains(e.target)) options.classList.add('hidden');
+  });
+}
 /* ---------------- Tabs, history, swipe ---------------- */
 tabs.forEach(t => t.addEventListener('click', ()=> setActiveTab(t.dataset.tab)));
 
@@ -292,15 +410,29 @@ window.addEventListener('popstate', (ev) => {
 });
 
 let touchStartX = 0;
-main.addEventListener('touchstart', (e)=> touchStartX = e.changedTouches[0].screenX, {passive:true});
+let touchStartY = 0;
+
+main.addEventListener('touchstart', (e)=> {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, {passive:true});
+
 main.addEventListener('touchend', (e)=> {
-  const diff = e.changedTouches[0].screenX - touchStartX;
-  if (Math.abs(diff) < 50) return;
+  const touchEndX = e.changedTouches[0].screenX;
+  const touchEndY = e.changedTouches[0].screenY;
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+
+  // 👉 Solo consideramos swipe si el movimiento horizontal es mayor al vertical
+  if (Math.abs(diffX) < 50 || Math.abs(diffX) < Math.abs(diffY)) return;
+
   const order = Array.from(tabs).map(t=>t.dataset.tab);
   const current = localStorage.getItem(LS_TAB) || 'envi';
   let idx = order.indexOf(current);
-  if (diff < 0 && idx < order.length-1) idx++;
-  if (diff > 0 && idx > 0) idx--;
+
+  if (diffX < 0 && idx < order.length-1) idx++; // derecha → izquierda
+  if (diffX > 0 && idx > 0) idx--;             // izquierda → derecha
+
   setActiveTab(order[idx]);
 }, {passive:true});
 
