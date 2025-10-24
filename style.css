@@ -130,14 +130,14 @@ footer{
       background:;
       padding:1rem;
       text-align:center;
-      font-size:var(--font-xs);
-      color:var(--color-secondary);
+      font-size:var(--font-xxxs);
+      color:var(--color-button);
       margin-top:;
     }
 .anuncio {
   background: transparent;
   border-radius:8px;
-  padding:1rem;
+  padding:0.6rem;
   display:inline-flex;
   gap:10px;
   align-items:center;
@@ -145,8 +145,8 @@ footer{
 .anuncio a {
 }
 .anuncio img.profile {
-  width:15px;
-  height:15px;
+  width:9px;
+  height:9px;
   border-radius:50%;
 }
 /* Modal fullscreen para videos asociados a imagenes - full-screen app-like */
