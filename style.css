@@ -9,6 +9,8 @@
       --color-button-hover: #3a3a5c;
 	  --font: 1rem;
 	  --font-xs: 0.8rem;
+      --font-xxs: 0.6rem;
+      --font-xxxs: 0.4rem;
     }
     .modal-media iframe, .modal-media video {
     -webkit-background-color: var(--color-primary); /* Safari interno */
