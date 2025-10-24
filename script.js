@@ -311,7 +311,6 @@ function renderEnVi2(){
 <div data-value="disneychannel">Disney Channel</div>
 <div data-value="disneyjr">Disney Junior</div>
 <div data-value="fx">FX</div>
-
 <div data-value="goldenedge">GOLDEN EDGE</div>
 <div data-value="goldenplus">GOLDEN PLUS</div>
 <div data-value="goldenpremier">GOLDEN PREMIER</div>
