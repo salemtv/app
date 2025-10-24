@@ -66,6 +66,30 @@
       "title": "Rápido y furioso",
       "image": "https://image.tmdb.org/t/p/original/zFR949B0hxdgi0vljf8tCJiZ65z.jpg",
       "video": "https://cdn.flick.vip/9799/index.m3u8?v=795114391"
+    },
+    {
+      "id": "El Conjuro 4",
+      "title": "El Conjuro 4",
+      "image": "https://image.tmdb.org/t/p/original/dyW5mX4wwDoZWgTYObx6pg9V0i9.jpg",
+      "video": "https://cdn.flick.vip/1038392/index.m3u8?v=3290578986"
+    },
+    {
+      "id": "El Conjuro 3",
+      "title": "El Conjuro 3",
+      "image": "https://image.tmdb.org/t/p/original/k8HN29t4VxiOagq9jaVVwZJ6wIB.jpg",
+      "video": "https://cdn.flick.vip/423108/index.m3u8?v=2149819213"
+    },
+    {
+      "id": "El Conjuro 2",
+      "title": "El Conjuro 2",
+      "image": "https://image.tmdb.org/t/p/original/x4jUJ0fF60SSOeUUTkaRtmnDvwG.jpg",
+      "video": "https://cdn.flick.vip/259693/index.m3u8?v=2106441825"
+    },
+    {
+      "id": "El Conjuro",
+      "title": "El Conjuro",
+      "image": "https://image.tmdb.org/t/p/original/10ir0eISr3p1MF1mjZwGTx7u4vv.jpg",
+      "video": "https://cdn.flick.vip/138843/index.m3u8?v=1248680745"
     }
   ]
 }
