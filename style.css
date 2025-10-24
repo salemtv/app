@@ -131,7 +131,7 @@ footer{
       padding:1rem;
       text-align:center;
       font-size:var(--font-xs);
-      color:var(--color-muted);
+      color:var(--color-secondary);
       margin-top:;
     }
 .anuncio {
