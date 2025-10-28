@@ -339,7 +339,13 @@ input:focus, select:focus, textarea:focus {
   background: linear-gradient(transparent, rgba(0,0,0,0.7));
   transition: opacity 0.3s;
 }
+.cp-controls {
+  opacity: 0;
+}
 
+.cp-controls.visible {
+  opacity: 1;
+}
 .cp-center {
   display: flex;
   justify-content: center;
