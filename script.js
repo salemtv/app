@@ -107,58 +107,192 @@ function renderImages(){
     }
   });
 }
-
-/* ---------------- Modal ---------------- */
-function openImagePlayer(item){
-  const src = item.video || item.iframe || item.player || item.srcVideo || '';
+/* ---------------- Modal + Reproductor personalizado universal ---------------- */
+function openImagePlayer(item) {
+  const src = item.video || item.srcVideo || item.iframe || item.player || '';
   if (!src) return;
-  const title = item.title || item.name || item.id || '';
 
-  const isiOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  if (isiOS && src.match(/\.(mp4|mov|m4v)(\?|$)/i)) { window.location.href = src; return; }
-
+  const title = item.title || item.name || item.id || 'Video';
   modalTitle.textContent = title;
   modalMedia.innerHTML = '';
 
-  if (src.match(/\.(mp4|webm|ogg)(\?|$)/i)) {
-    const v = document.createElement('video');
-    v.src = src; v.controls = true; v.autoplay = true; v.playsInline = true;
-    v.style.maxHeight='100%';
-    v.setAttribute('controlsList','nodownload');
-    modalMedia.appendChild(v);
-    try { v.play().catch(()=>{}); } catch(e) {}
+  // --- Crear contenedor del reproductor ---
+  const playerWrap = document.createElement('div');
+  playerWrap.className = 'custom-player';
+
+  // --- Crear video ---
+  const video = document.createElement('video');
+  video.className = 'custom-video';
+  video.playsInline = true;
+  video.preload = 'metadata';
+  video.controls = false; // nuestro propio control
+  playerWrap.appendChild(video);
+
+  // --- Detectar HLS o formato normal ---
+  const isHls = src.toLowerCase().endsWith('.m3u8');
+  if (isHls && window.Hls && Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(src);
+    hls.attachMedia(video);
   } else {
-    const iframe = document.createElement('iframe');
-    iframe.src = src.includes('youtube.com') && !src.includes('enablejsapi')
-      ? src + (src.includes('?') ? '&enablejsapi=1' : '?enablejsapi=1')
-      : src;
-    iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
-    iframe.setAttribute('allowfullscreen','');
-    iframe.style.border='none';
-    modalMedia.appendChild(iframe);
+    video.src = src;
   }
 
+  // --- Crear controles ---
+  const controls = document.createElement('div');
+  controls.className = 'cp-controls visible';
+  controls.innerHTML = `
+    <div class="cp-center">
+      <button class="cp-btn cp-rev"><span class="material-symbols-outlined">replay_10</span></button>
+      <button class="cp-btn cp-play"><span class="material-symbols-outlined">play_arrow</span></button>
+      <button class="cp-btn cp-fwd"><span class="material-symbols-outlined">forward_10</span></button>
+    </div>
+    <div class="cp-progress-row">
+      <span class="cp-time cp-cur">0:00</span>
+      <div class="cp-bar">
+        <div class="cp-bar-bg"></div>
+        <div class="cp-bar-fill"></div>
+        <div class="cp-bar-handle"></div>
+        <input class="cp-progress" type="range" min="0" max="100" step="0.1" value="0">
+      </div>
+      <span class="cp-time cp-dur">0:00</span>
+    </div>
+    <div class="cp-bottom-row">
+      <div class="cp-info">${title}</div>
+      <div class="cp-right">
+        <button class="cp-btn cp-mute"><span class="material-symbols-outlined">volume_up</span></button>
+        ${document.pictureInPictureEnabled && !/iPhone|iPad|iPod/.test(navigator.userAgent)
+          ? `<button class="cp-btn cp-pip"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`
+          : ''}
+        <button class="cp-btn cp-full"><span class="material-symbols-outlined">fullscreen</span></button>
+      </div>
+    </div>
+  `;
+  playerWrap.appendChild(controls);
+  modalMedia.appendChild(playerWrap);
+
+  // --- Referencias ---
+  const playBtn = controls.querySelector('.cp-play');
+  const revBtn = controls.querySelector('.cp-rev');
+  const fwdBtn = controls.querySelector('.cp-fwd');
+  const muteBtn = controls.querySelector('.cp-mute');
+  const pipBtn = controls.querySelector('.cp-pip');
+  const fullBtn = controls.querySelector('.cp-full');
+  const progressEl = controls.querySelector('.cp-progress');
+  const fillEl = controls.querySelector('.cp-bar-fill');
+  const handleEl = controls.querySelector('.cp-bar-handle');
+  const curEl = controls.querySelector('.cp-cur');
+  const durEl = controls.querySelector('.cp-dur');
+
+  // --- Funciones ---
+  const formatTime = (sec) => {
+    if (!isFinite(sec)) return '0:00';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+  };
+
+  const updateUI = () => {
+    const dur = video.duration || 0;
+    const cur = video.currentTime || 0;
+    const pct = dur ? (cur / dur) * 100 : 0;
+    progressEl.value = pct;
+    fillEl.style.width = pct + '%';
+    handleEl.style.left = pct + '%';
+    curEl.textContent = formatTime(cur);
+    durEl.textContent = formatTime(dur);
+  };
+
+  // --- Acciones ---
+  playBtn.onclick = () => (video.paused ? video.play() : video.pause());
+  revBtn.onclick = () => (video.currentTime = Math.max(0, video.currentTime - 10));
+  fwdBtn.onclick = () => (video.currentTime = Math.min(video.duration, video.currentTime + 10));
+  muteBtn.onclick = () => {
+    video.muted = !video.muted;
+    muteBtn.firstElementChild.textContent = video.muted ? 'volume_off' : 'volume_up';
+  };
+
+  if (pipBtn)
+    pipBtn.onclick = async () => {
+      try {
+        if (document.pictureInPictureElement) await document.exitPictureInPicture();
+        else await video.requestPictureInPicture();
+      } catch (e) {
+        console.warn('PiP no soportado', e);
+      }
+    };
+
+  fullBtn.onclick = async () => {
+    try {
+      if (!document.fullscreenElement) await modalFull.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (e) {
+      console.warn('Error fullscreen', e);
+    }
+  };
+
+  document.addEventListener('fullscreenchange', () => {
+    fullBtn.firstElementChild.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+  });
+
+  let seeking = false;
+  progressEl.oninput = (e) => {
+    seeking = true;
+    const pct = e.target.value;
+    const dur = video.duration || 0;
+    fillEl.style.width = pct + '%';
+    handleEl.style.left = pct + '%';
+    curEl.textContent = formatTime((pct / 100) * dur);
+  };
+  progressEl.onchange = (e) => {
+    const pct = e.target.value;
+    const dur = video.duration || 0;
+    video.currentTime = (pct / 100) * dur;
+    seeking = false;
+  };
+
+  video.ontimeupdate = () => !seeking && updateUI();
+  video.onloadedmetadata = updateUI;
+  video.onplay = () => (playBtn.firstElementChild.textContent = 'pause');
+  video.onpause = () => (playBtn.firstElementChild.textContent = 'play_arrow');
+
+  // --- Auto ocultar controles ---
+  let hideTimer;
+  const showControls = () => {
+    controls.classList.add('visible');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => controls.classList.remove('visible'), 3000);
+  };
+  playerWrap.addEventListener('mousemove', showControls);
+  playerWrap.addEventListener('touchstart', showControls);
+  showControls();
+
+  // --- Mostrar modal ---
   modalFull.classList.add('active');
-  modalFull.setAttribute('aria-hidden','false');
+  modalFull.setAttribute('aria-hidden', 'false');
   document.body.classList.add('no-scroll');
 }
 
-function closeModal(){
+function closeModal() {
   const media = modalMedia.querySelector('video, iframe');
-  if (media && media.tagName === 'VIDEO') { try { media.pause(); } catch(e){} media.src = ''; }
-  if (media && media.tagName === 'IFRAME') {
-    try { media.contentWindow.postMessage('{"event":"command","func":"stopVideo","args":""}', '*'); } catch(e){}
-    media.src = 'about:blank';
+  if (media && media.tagName === 'VIDEO') {
+    try {
+      media.pause();
+      media.src = '';
+    } catch (e) {}
   }
   modalMedia.innerHTML = '';
   modalTitle.textContent = '';
   modalFull.classList.remove('active');
-  modalFull.setAttribute('aria-hidden','true');
+  modalFull.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('no-scroll');
 }
 
 modalClose.addEventListener('click', closeModal);
-modalFull.addEventListener('click', (e)=> { if (e.target === modalFull) closeModal(); });
+modalFull.addEventListener('click', (e) => {
+  if (e.target === modalFull) closeModal();
+});
 
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
