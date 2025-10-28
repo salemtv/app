@@ -313,3 +313,47 @@ input:focus, select:focus, textarea:focus {
 }
 
 .hidden { display: none; }
+
+/* -------- Custom Player (v2 Mejorado) -------- */
+.custom-player{position:relative;width:100%;height:100%;max-height:80vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.custom-video{width:100%;height:100%;object-fit:contain;background:black;display:block;outline:none;}
+
+/* Marca de agua (logo). Cambia el tamaño según prefieras */
+.cp-watermark{position:absolute;top:12px;right:12px;z-index:70;opacity:0.85;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.cp-watermark-img{width:44px;height:44px;object-fit:contain;border-radius:6px;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));}
+
+/* Overlay */
+.cp-overlay-title{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.1rem;background:rgba(0,0,0,0.22);z-index:30;pointer-events:none;}
+
+/* Controls */
+.cp-controls{position:absolute;left:0;right:0;bottom:0;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:50;transition:opacity .3s;box-sizing:border-box;}
+.cp-controls:not(.visible){opacity:0;pointer-events:none;}
+.cp-center{display:flex;justify-content:center;align-items:center;gap:16px;}
+.cp-center .cp-btn{background:rgba(255,255,255,0.08);border:none;padding:10px;border-radius:50%;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.cp-center .cp-btn:hover{background:rgba(255,255,255,0.18);}
+.cp-btn .material-symbols-outlined{font-size:28px;}
+
+.cp-progress-row{display:flex;align-items:center;gap:8px;}
+.cp-bar{position:relative;flex:1;height:6px;border-radius:4px;overflow:hidden;cursor:pointer;background:transparent;}
+.cp-bar-bg{position:absolute;inset:0;background:rgba(255,255,255,0.12);}
+.cp-bar-fill{position:absolute;left:0;top:0;height:100%;background:var(--color-accent,#f00);width:0;z-index:1;}
+.cp-progress{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2;}
+
+.cp-time{color:#fff;font-size:13px;min-width:46px;text-align:center;}
+
+.cp-bottom-row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+.cp-info{color:rgba(255,255,255,0.88);font-weight:600;font-size:0.95rem;text-shadow:0 6px 20px rgba(0,0,0,0.6);}
+.cp-right{display:flex;gap:8px;}
+.cp-right .cp-btn{background:transparent;border:none;color:white;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;}
+
+/* Resume prompt */
+.cp-resume{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:60;background:rgba(0,0,0,0.6);}
+.cp-resume-box{background:var(--color-secondary);padding:14px;border-radius:10px;color:var(--color-text);text-align:center;}
+
+/* Responsive */
+@media (max-width:480px){
+  .cp-center .cp-btn{padding:8px;}
+  .cp-btn .material-symbols-outlined{font-size:24px;}
+  .cp-time{font-size:12px;min-width:40px;}
+  .cp-watermark-img{width:34px;height:34px;}
+}
