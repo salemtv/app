@@ -2,10 +2,22 @@
   "title": "Collections",
   "items": [
     {
+      "id": "Una Pareja Explosiva 3",
+      "title": "Una Pareja Explosiva 3",
+      "image": "https://image.tmdb.org/t/p/original/2UeIKPirME0l4UeUuv5TklDezR4.jpg",
+      "video": "https://cdn.flick.vip/5174/index.m3u8?v=2889895162"
+    },
+    {
+      "id": "Una Pareja Explosiva 2",
+      "title": "Una Pareja Explosiva 2",
+      "image": "https://image.tmdb.org/t/p/original/rqquHoHee73YSV5xqAcpEf8dU2s.jpg",
+      "video": "https://cdn.flick.vip/5175/index.m3u8?v=9753464484"
+    },
+    {
       "id": "Una Pareja Explosiva",
       "title": "Una Pareja Explosiva",
       "image": "https://image.tmdb.org/t/p/original/kZyMWQutqBfVYFxnhypGt0YaKcD.jpg",
-      "video": "https://hugh.cdn.rumble.cloud/video/s8/2/j/W/O/g/jWOgq.aaa.mp4"
+      "video": "https://cdn.flick.vip/2109/index.m3u8?v=8924759767"
     },
     {
       "id": ["Rapidos y Furiosos X", "Rápidos y Furiosos X"],
