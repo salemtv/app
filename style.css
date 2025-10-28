@@ -315,127 +315,6 @@ input:focus, select:focus, textarea:focus {
 .hidden { display: none; }
 
 /* -------- Custom Player (v2 Mejorado) -------- */
-.custom-player {
-  position: relative;
-  background: #000;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.custom-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cp-controls {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  color: #fff;
-  padding: 10px;
-  box-sizing: border-box;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
-  transition: opacity 0.3s;
-}
-.cp-controls {
-  opacity: 0;
-}
-
-.cp-controls.visible {
-  opacity: 1;
-}
-.cp-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 8px;
-}
-
-.cp-btn {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.cp-progress-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.cp-bar {
-  position: relative;
-  flex: 1;
-  height: 5px;
-  background: transparent;
-}
-
-.cp-bar-bg {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.3);
-  border-radius: 3px;
-}
-
-.cp-bar-fill {
-  position: absolute;
-  inset: 0;
-  background: #f00;
-  border-radius: 3px;
-  width: 0%;
-  pointer-events: none;
-}
-
-.cp-bar-handle {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  background: #f00;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.cp-bar:hover .cp-bar-handle {
-  opacity: 1;
-}
-
-.cp-progress {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  background: transparent;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-}
-
-.cp-progress::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 0;
-  height: 0;
-}
-
-.cp-bottom-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-}
-
-.cp-info {
-  font-size: 13px;
-  color: #ddd;
-}
-
 .cp-watermark {
   position: absolute;
   top: 10px;
@@ -448,19 +327,97 @@ input:focus, select:focus, textarea:focus {
   height: 40px;
 }
 
-.cp-resume {
+.custom-player {
+  position: relative;
+  width: 100%;
+  background: black;
+  overflow: hidden;
+}
+
+.custom-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: black;
+}
+
+/* Controles */
+.cp-controls {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  opacity: 0;
+  transition: opacity 0.3s;
+  padding: 1rem;
+}
+.cp-controls.visible { opacity: 1; }
+
+.cp-center {
+  display: flex;
   justify-content: center;
-  background: rgba(0,0,0,0.6);
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .5rem;
+}
+.cp-progress-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+.cp-bar {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.2);
+  border-radius: 2px;
+}
+.cp-bar-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: #f00;
+  border-radius: 2px;
+  width: 0%;
+}
+.cp-bar-handle {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px; height: 12px;
+  background: #f00;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.cp-progress {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
 }
 
-.cp-resume-box {
-  background: #111;
+.cp-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .9rem;
   color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
 }
+.cp-info { opacity: .8; }
+.cp-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.cp-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: opacity .2s;
+}
+.cp-btn:hover { opacity: .8; }
