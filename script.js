@@ -253,19 +253,29 @@ function renderImages(){
       durEl.textContent = formatTime(dur);
     }
 
-    // Play/pause
-    playBtn.addEventListener('click', async () => {
-      try {
-        if (video.paused || video.ended) {
-          await video.play();
-        } else {
-          video.pause();
-        }
-      } catch (e) { console.warn('play err', e); }
-    });
-    video.addEventListener('play', () => { playBtn.firstElementChild.textContent = 'pause'; });
-    video.addEventListener('pause', () => { playBtn.firstElementChild.textContent = 'play_arrow'; });
+    // Play/pause (anti-rebound + safe play)
+let playLock = false;
+playBtn.addEventListener('click', async () => {
+  if (playLock) return; // evita múltiples clics rápidos
+  playLock = true;
+  try {
+    if (video.paused || video.ended) {
+      await video.play().catch(() => {}); // ignora errores de autoplay bloqueado
+    } else {
+      video.pause();
+    }
+  } catch (e) {
+    console.warn('play err', e);
+  }
+  setTimeout(() => playLock = false, 400); // libera bloqueo tras 0.4s
+});
 
+video.addEventListener('play', () => {
+  playBtn.firstElementChild.textContent = 'pause';
+});
+video.addEventListener('pause', () => {
+  playBtn.firstElementChild.textContent = 'play_arrow';
+});
     // skip
     revBtn.addEventListener('click', () => { video.currentTime = Math.max(0, (video.currentTime || 0) - 10); updateUI(); });
     fwdBtn.addEventListener('click', () => { video.currentTime = Math.min((video.duration || Infinity), (video.currentTime || 0) + 10); updateUI(); });
