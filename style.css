@@ -464,11 +464,3 @@ input:focus, select:focus, textarea:focus {
   border-radius: 8px;
   text-align: center;
 }
-
-/* Responsive */
-@media (max-width:480px){
-  .cp-center .cp-btn{padding:8px;}
-  .cp-btn .material-symbols-outlined{font-size:24px;}
-  .cp-time{font-size:12px;min-width:40px;}
-  .cp-watermark-img{width:34px;height:34px;}
-}
