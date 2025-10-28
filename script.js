@@ -379,26 +379,45 @@ video.addEventListener('pause', () => {
       }
     } catch(e){}
 
-    // touch gestures: single tap toggle, double tap skip
-    if ('ontouchstart' in window) {
-      let lastTap = 0;
-      wrap.addEventListener('touchend', (ev) => {
-        if (ev.target.closest('.cp-controls') && !ev.target.closest('.cp-center')) return;
-        const now = Date.now();
-        const touch = ev.changedTouches[0];
-        const rect = wrap.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const half = rect.width / 2;
-        const dt = now - lastTap;
-        if (dt < 300 && dt > 0) {
-          if (x < half) video.currentTime = Math.max(0, video.currentTime - 10);
-          else video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
-        } else {
-          if (video.paused) video.play().catch(()=>{}); else video.pause();
-        }
-        lastTap = now;
-      }, { passive:true });
+    // Touch gestures: single tap toggle, double tap skip (optimized to avoid interference)
+if ('ontouchstart' in window) {
+  let lastTap = 0;
+  let tapTimeout = null;
+
+  wrap.addEventListener('touchend', (ev) => {
+    const target = ev.target;
+
+    // Evita interferencia: si se tocó un botón o control visible, no ejecutar gesto
+    if (target.closest('.cp-btn') || target.closest('.cp-progress') || target.closest('.cp-bar')) return;
+
+    const now = Date.now();
+    const dt = now - lastTap;
+    const touch = ev.changedTouches[0];
+    const rect = wrap.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const half = rect.width / 2;
+
+    // Doble tap = saltar ±10s
+    if (dt < 300 && dt > 0) {
+      clearTimeout(tapTimeout);
+      if (x < half) {
+        video.currentTime = Math.max(0, video.currentTime - 10);
+      } else {
+        video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
+      }
+      lastTap = 0; // reinicia para no detectar triple tap
+      return;
     }
+
+    // Tap simple = play/pause toggle
+    tapTimeout = setTimeout(() => {
+      if (video.paused) video.play().catch(()=>{}); 
+      else video.pause();
+    }, 250);
+
+    lastTap = now;
+  }, { passive: true });
+}
 
     // auto-hide controls (3s)
     let hideTimer = null;
