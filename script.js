@@ -107,192 +107,368 @@ function renderImages(){
     }
   });
 }
-/* ---------------- Modal + Reproductor personalizado universal ---------------- */
-function openImagePlayer(item) {
-  const src = item.video || item.srcVideo || item.iframe || item.player || '';
-  if (!src) return;
+/* ---------------- Modal + Reproductor personalizado (v2.2) ---------------- */
+/* Reemplaza por completo openImagePlayer / closeModal anteriores */
+(function(){
+  // referencias al DOM (asegúrate que existan en tu HTML)
+  const modalFull = document.getElementById('modalFull');
+  const modalMedia = document.getElementById('modalMedia');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalClose = document.getElementById('modalClose');
 
-  const title = item.title || item.name || item.id || 'Video';
-  modalTitle.textContent = title;
-  modalMedia.innerHTML = '';
-
-  // --- Crear contenedor del reproductor ---
-  const playerWrap = document.createElement('div');
-  playerWrap.className = 'custom-player';
-
-  // --- Crear video ---
-  const video = document.createElement('video');
-  video.className = 'custom-video';
-  video.playsInline = true;
-  video.preload = 'metadata';
-  video.controls = false; // nuestro propio control
-  playerWrap.appendChild(video);
-
-  // --- Detectar HLS o formato normal ---
-  const isHls = src.toLowerCase().endsWith('.m3u8');
-  if (isHls && window.Hls && Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(src);
-    hls.attachMedia(video);
-  } else {
-    video.src = src;
+  function isIOS() {
+    return /iPhone|iPad|iPod/.test(navigator.userAgent);
+  }
+  function isStandaloneIOS() {
+    // iOS PWA detection: navigator.standalone (old) OR display-mode standalone (modern)
+    return (('standalone' in navigator && navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches) && isIOS();
   }
 
-  // --- Crear controles ---
-  const controls = document.createElement('div');
-  controls.className = 'cp-controls visible';
-  controls.innerHTML = `
-    <div class="cp-center">
-      <button class="cp-btn cp-rev"><span class="material-symbols-outlined">replay_10</span></button>
-      <button class="cp-btn cp-play"><span class="material-symbols-outlined">play_arrow</span></button>
-      <button class="cp-btn cp-fwd"><span class="material-symbols-outlined">forward_10</span></button>
-    </div>
-    <div class="cp-progress-row">
-      <span class="cp-time cp-cur">0:00</span>
-      <div class="cp-bar">
-        <div class="cp-bar-bg"></div>
-        <div class="cp-bar-fill"></div>
-        <div class="cp-bar-handle"></div>
-        <input class="cp-progress" type="range" min="0" max="100" step="0.1" value="0">
-      </div>
-      <span class="cp-time cp-dur">0:00</span>
-    </div>
-    <div class="cp-bottom-row">
-      <div class="cp-info">${title}</div>
-      <div class="cp-right">
-        <button class="cp-btn cp-mute"><span class="material-symbols-outlined">volume_up</span></button>
-        ${document.pictureInPictureEnabled && !/iPhone|iPad|iPod/.test(navigator.userAgent)
-          ? `<button class="cp-btn cp-pip"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`
-          : ''}
-        <button class="cp-btn cp-full"><span class="material-symbols-outlined">fullscreen</span></button>
-      </div>
-    </div>
-  `;
-  playerWrap.appendChild(controls);
-  modalMedia.appendChild(playerWrap);
-
-  // --- Referencias ---
-  const playBtn = controls.querySelector('.cp-play');
-  const revBtn = controls.querySelector('.cp-rev');
-  const fwdBtn = controls.querySelector('.cp-fwd');
-  const muteBtn = controls.querySelector('.cp-mute');
-  const pipBtn = controls.querySelector('.cp-pip');
-  const fullBtn = controls.querySelector('.cp-full');
-  const progressEl = controls.querySelector('.cp-progress');
-  const fillEl = controls.querySelector('.cp-bar-fill');
-  const handleEl = controls.querySelector('.cp-bar-handle');
-  const curEl = controls.querySelector('.cp-cur');
-  const durEl = controls.querySelector('.cp-dur');
-
-  // --- Funciones ---
-  const formatTime = (sec) => {
-    if (!isFinite(sec)) return '0:00';
+  function formatTime(sec) {
+    if (!isFinite(sec) || isNaN(sec)) return '0:00';
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = Math.floor(sec % 60);
     return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
-  };
-
-  const updateUI = () => {
-    const dur = video.duration || 0;
-    const cur = video.currentTime || 0;
-    const pct = dur ? (cur / dur) * 100 : 0;
-    progressEl.value = pct;
-    fillEl.style.width = pct + '%';
-    handleEl.style.left = pct + '%';
-    curEl.textContent = formatTime(cur);
-    durEl.textContent = formatTime(dur);
-  };
-
-  // --- Acciones ---
-  playBtn.onclick = () => (video.paused ? video.play() : video.pause());
-  revBtn.onclick = () => (video.currentTime = Math.max(0, video.currentTime - 10));
-  fwdBtn.onclick = () => (video.currentTime = Math.min(video.duration, video.currentTime + 10));
-  muteBtn.onclick = () => {
-    video.muted = !video.muted;
-    muteBtn.firstElementChild.textContent = video.muted ? 'volume_off' : 'volume_up';
-  };
-
-  if (pipBtn)
-    pipBtn.onclick = async () => {
-      try {
-        if (document.pictureInPictureElement) await document.exitPictureInPicture();
-        else await video.requestPictureInPicture();
-      } catch (e) {
-        console.warn('PiP no soportado', e);
-      }
-    };
-
-  fullBtn.onclick = async () => {
-    try {
-      if (!document.fullscreenElement) await modalFull.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch (e) {
-      console.warn('Error fullscreen', e);
-    }
-  };
-
-  document.addEventListener('fullscreenchange', () => {
-    fullBtn.firstElementChild.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
-  });
-
-  let seeking = false;
-  progressEl.oninput = (e) => {
-    seeking = true;
-    const pct = e.target.value;
-    const dur = video.duration || 0;
-    fillEl.style.width = pct + '%';
-    handleEl.style.left = pct + '%';
-    curEl.textContent = formatTime((pct / 100) * dur);
-  };
-  progressEl.onchange = (e) => {
-    const pct = e.target.value;
-    const dur = video.duration || 0;
-    video.currentTime = (pct / 100) * dur;
-    seeking = false;
-  };
-
-  video.ontimeupdate = () => !seeking && updateUI();
-  video.onloadedmetadata = updateUI;
-  video.onplay = () => (playBtn.firstElementChild.textContent = 'pause');
-  video.onpause = () => (playBtn.firstElementChild.textContent = 'play_arrow');
-
-  // --- Auto ocultar controles ---
-  let hideTimer;
-  const showControls = () => {
-    controls.classList.add('visible');
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => controls.classList.remove('visible'), 3000);
-  };
-  playerWrap.addEventListener('mousemove', showControls);
-  playerWrap.addEventListener('touchstart', showControls);
-  showControls();
-
-  // --- Mostrar modal ---
-  modalFull.classList.add('active');
-  modalFull.setAttribute('aria-hidden', 'false');
-  document.body.classList.add('no-scroll');
-}
-
-function closeModal() {
-  const media = modalMedia.querySelector('video, iframe');
-  if (media && media.tagName === 'VIDEO') {
-    try {
-      media.pause();
-      media.src = '';
-    } catch (e) {}
   }
-  modalMedia.innerHTML = '';
-  modalTitle.textContent = '';
-  modalFull.classList.remove('active');
-  modalFull.setAttribute('aria-hidden', 'true');
-  document.body.classList.remove('no-scroll');
-}
 
-modalClose.addEventListener('click', closeModal);
-modalFull.addEventListener('click', (e) => {
-  if (e.target === modalFull) closeModal();
-});
+  // Utility: detect PiP support for the current environment + video instance
+  function supportsPiP(videoEl) {
+    try {
+      // Modern: document.pictureInPictureEnabled + element.requestPictureInPicture
+      if ('pictureInPictureEnabled' in document && typeof videoEl.requestPictureInPicture === 'function') return true;
+      // WebKit variant (Safari): webkitSupportsPresentationMode + webkitSetPresentationMode
+      if (typeof videoEl.webkitSupportsPresentationMode === 'function' && videoEl.webkitSupportsPresentationMode('picture-in-picture') !== undefined) {
+        return !!videoEl.webkitSupportsPresentationMode; // presence check
+      }
+    } catch(e){}
+    return false;
+  }
+
+  // Cleanup helper used by closeModal
+  function cleanupPlayer(wrapper) {
+    if (!wrapper) return;
+    const vid = wrapper.querySelector('video');
+    if (vid) {
+      try { vid.pause(); } catch(e){}
+      // destroy hls if attached
+      if (vid._hls && typeof vid._hls.destroy === 'function') {
+        try { vid._hls.destroy(); } catch(e){}
+      }
+      try { vid.src = ''; } catch(e){}
+    }
+    wrapper.remove();
+  }
+
+  // === MAIN: openImagePlayer ===
+  window.openImagePlayer = function(item) {
+    const src = item.video || item.srcVideo || item.iframe || item.player || '';
+    if (!src) return;
+    const title = item.title || item.name || item.id || 'Video';
+    const vidKey = 'stv_resume_' + (item.id || title || src);
+
+    // set title in top header (you already have modalTitle in HTML)
+    modalTitle.textContent = title;
+    // clear previous
+    modalMedia.innerHTML = '';
+
+    // build wrapper for custom player inside your modal-media area
+    const wrap = document.createElement('div');
+    wrap.className = 'custom-player';
+
+    // create video element (no native controls)
+    const video = document.createElement('video');
+    video.className = 'custom-video';
+    video.playsInline = true;
+    video.setAttribute('webkit-playsinline', ''); // iOS
+    video.preload = 'metadata';
+    video.controls = false;
+    wrap.appendChild(video);
+
+    // HLS support: if .m3u8 and hls.js present, use it; otherwise set src
+    const isHls = /\.m3u8(\?.*)?$/i.test(src);
+    if (isHls && window.Hls && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      video._hls = hls; // keep reference for cleanup
+    } else {
+      video.src = src;
+    }
+
+    // watermark (logo) — cámbiala si quieres
+    const watermark = document.createElement('div');
+    watermark.className = 'cp-watermark';
+    watermark.innerHTML = `<img src="https://via.placeholder.com/48x48.png?text=Logo" alt="Logo" class="cp-watermark-img">`;
+    wrap.appendChild(watermark);
+
+    // controls markup (title is shown below in cp-info)
+    const controls = document.createElement('div');
+    controls.className = 'cp-controls visible';
+    // decide whether PiP button should show: require PiP support AND NOT iOS standalone (PWA)
+    const pipVisible = !isStandaloneIOS() && supportsPiP(video);
+    controls.innerHTML = `
+      <div class="cp-center">
+        <button class="cp-btn cp-rev" title="-10s"><span class="material-symbols-outlined">replay_10</span></button>
+        <button class="cp-btn cp-play" title="Play/Pause"><span class="material-symbols-outlined">play_arrow</span></button>
+        <button class="cp-btn cp-fwd" title="+10s"><span class="material-symbols-outlined">forward_10</span></button>
+      </div>
+
+      <div class="cp-progress-row">
+        <span class="cp-time cp-cur">0:00</span>
+        <div class="cp-bar" aria-hidden="true">
+          <div class="cp-bar-bg"></div>
+          <div class="cp-bar-fill"></div>
+          <div class="cp-bar-handle"></div>
+          <input class="cp-progress" type="range" min="0" max="100" step="0.1" value="0" aria-label="Progreso">
+        </div>
+        <span class="cp-time cp-dur">0:00</span>
+      </div>
+
+      <div class="cp-bottom-row">
+        <div class="cp-info">${title}</div>
+        <div class="cp-right">
+          <button class="cp-btn cp-mute" title="Mute"><span class="material-symbols-outlined">volume_up</span></button>
+          ${pipVisible ? `<button class="cp-btn cp-pip" title="Picture in Picture"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>` : ''}
+          <button class="cp-btn cp-full" title="Pantalla completa"><span class="material-symbols-outlined">fullscreen</span></button>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(controls);
+
+    // append player into modalMedia
+    modalMedia.appendChild(wrap);
+
+    // reference elements inside controls
+    const playBtn = controls.querySelector('.cp-play');
+    const revBtn = controls.querySelector('.cp-rev');
+    const fwdBtn = controls.querySelector('.cp-fwd');
+    const muteBtn = controls.querySelector('.cp-mute');
+    const pipBtn = controls.querySelector('.cp-pip');
+    const fullBtn = controls.querySelector('.cp-full');
+    const progressEl = controls.querySelector('.cp-progress');
+    const fillEl = controls.querySelector('.cp-bar-fill');
+    const handleEl = controls.querySelector('.cp-bar-handle');
+    const curEl = controls.querySelector('.cp-cur');
+    const durEl = controls.querySelector('.cp-dur');
+
+    // UI update helper
+    function updateUI() {
+      const dur = video.duration || 0;
+      const cur = video.currentTime || 0;
+      const pct = dur ? (cur / dur) * 100 : 0;
+      if (!isNaN(pct)) {
+        progressEl.value = pct;
+        fillEl.style.width = pct + '%';
+        handleEl.style.left = pct + '%';
+      }
+      curEl.textContent = formatTime(cur);
+      durEl.textContent = formatTime(dur);
+    }
+
+    // Play / Pause
+    playBtn.addEventListener('click', async () => {
+      try {
+        if (video.paused || video.ended) await video.play();
+        else video.pause();
+      } catch (e) { console.warn('Play error', e); }
+    });
+
+    // update play icon on events
+    video.addEventListener('play', () => playBtn.firstElementChild.textContent = 'pause');
+    video.addEventListener('pause', () => playBtn.firstElementChild.textContent = 'play_arrow');
+
+    // rev / fwd
+    revBtn.addEventListener('click', () => { video.currentTime = Math.max(0, video.currentTime - 10); updateUI(); });
+    fwdBtn.addEventListener('click', () => { video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10); updateUI(); });
+
+    // mute
+    muteBtn.addEventListener('click', () => {
+      video.muted = !video.muted;
+      muteBtn.firstElementChild.textContent = video.muted ? 'volume_off' : 'volume_up';
+    });
+
+    // PiP handler with WebKit fallback
+    if (pipBtn) {
+      pipBtn.addEventListener('click', async () => {
+        try {
+          // Standard API if available
+          if (typeof video.requestPictureInPicture === 'function') {
+            if (document.pictureInPictureElement) await document.exitPictureInPicture();
+            else await video.requestPictureInPicture();
+          } else if (typeof video.webkitSetPresentationMode === 'function' && typeof video.webkitSupportsPresentationMode === 'function' && video.webkitSupportsPresentationMode('picture-in-picture')) {
+            // Safari WebKit fallback
+            try {
+              const mode = video.webkitPresentationMode || 'inline';
+              // toggle
+              if (video.webkitPresentationMode === 'picture-in-picture') video.webkitSetPresentationMode('inline');
+              else video.webkitSetPresentationMode('picture-in-picture');
+            } catch(e){ console.warn('webkit PiP toggle error', e); }
+          } else {
+            console.warn('PiP not supported on this element');
+          }
+        } catch (e) { console.warn('PiP error', e); }
+      });
+    }
+
+    // Fullscreen: prefer modalFull (the modal container) to ensure header/close still visible
+    fullBtn.addEventListener('click', async () => {
+      try {
+        if (!document.fullscreenElement) {
+          if (typeof modalFull.requestFullscreen === 'function') await modalFull.requestFullscreen();
+          else if (typeof video.requestFullscreen === 'function') await video.requestFullscreen();
+          else if (typeof wrap.requestFullscreen === 'function') await wrap.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (e) { console.warn('Fullscreen error', e); }
+    });
+
+    // update fullscreen icon on change
+    document.addEventListener('fullscreenchange', () => {
+      try {
+        fullBtn.firstElementChild.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+      } catch(e){}
+    });
+
+    // Progress interactions
+    let duringSeek = false;
+    progressEl.addEventListener('input', (ev) => {
+      duringSeek = true;
+      const pct = Number(ev.target.value || 0);
+      const dur = video.duration || 0;
+      fillEl.style.width = pct + '%';
+      handleEl.style.left = pct + '%';
+      if (dur) curEl.textContent = formatTime((pct / 100) * dur);
+      // show handle while interacting
+      handleEl.style.opacity = '1';
+    });
+    progressEl.addEventListener('change', (ev) => {
+      const pct = Number(ev.target.value || 0);
+      const dur = video.duration || 0;
+      if (dur) video.currentTime = (pct / 100) * dur;
+      duringSeek = false;
+      // fade the handle after small delay
+      setTimeout(()=> handleEl.style.opacity = '', 400);
+    });
+
+    // update while playing
+    video.addEventListener('timeupdate', () => {
+      if (!duringSeek) updateUI();
+      // save resume point every ~3s
+      try {
+        const raw = JSON.parse(localStorage.getItem(vidKey) || '{}');
+        if (!raw.t || Math.abs((raw.t||0) - video.currentTime) > 3) {
+          localStorage.setItem(vidKey, JSON.stringify({ t: video.currentTime, s: Date.now() }));
+        }
+      } catch(e){}
+    });
+
+    video.addEventListener('loadedmetadata', updateUI);
+
+    // Resume prompt: if saved > 3s, offer to resume
+    try {
+      const raw = JSON.parse(localStorage.getItem(vidKey) || '{}');
+      if (raw && raw.t && raw.t > 3) {
+        // minimal inline resume UI (reuse cp-resume if you have style, else play immediately)
+        const resumeBox = document.createElement('div');
+        resumeBox.className = 'cp-resume';
+        resumeBox.innerHTML = `
+          <div class="cp-resume-box">
+            <div>¿Retomar desde <strong class="cp-time">${formatTime(raw.t)}</strong>?</div>
+            <div style="margin-top:8px">
+              <button class="cp-btn cp-yes">Sí</button>
+              <button class="cp-btn cp-no">No</button>
+            </div>
+          </div>
+        `;
+        wrap.appendChild(resumeBox);
+        resumeBox.querySelector('.cp-yes').onclick = () => { video.currentTime = raw.t; resumeBox.remove(); video.play().catch(()=>{}); };
+        resumeBox.querySelector('.cp-no').onclick = () => { localStorage.removeItem(vidKey); resumeBox.remove(); video.play().catch(()=>{}); };
+      }
+    } catch(e){}
+
+    // Touch gestures: single tap toggle, double-tap skip (left/right half)
+    if ('ontouchstart' in window) {
+      let lastTap = 0;
+      wrap.addEventListener('touchend', (ev) => {
+        // don't toggle if tapped a control
+        if (ev.target.closest('.cp-controls') && !ev.target.closest('.cp-center')) return;
+        const now = Date.now();
+        const touch = ev.changedTouches[0];
+        const rect = wrap.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const half = rect.width / 2;
+        const dt = now - lastTap;
+        if (dt < 300 && dt > 0) {
+          // double-tap
+          if (x < half) video.currentTime = Math.max(0, video.currentTime - 10);
+          else video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
+        } else {
+          // single tap toggle
+          if (video.paused) video.play().catch(()=>{}); else video.pause();
+        }
+        lastTap = now;
+      }, { passive:true });
+    }
+
+    // Auto-hide controls after 3s inactivity (show on mousemove/touch)
+    let hideTimer = null;
+    function showControlsTemporary() {
+      controls.classList.add('visible');
+      // show handle briefly
+      handleEl.style.opacity = '1';
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        // only hide if playing
+        if (!video.paused) {
+          controls.classList.remove('visible');
+          // fade handle
+          handleEl.style.opacity = '';
+        }
+      }, 3000);
+    }
+    // bind events
+    wrap.addEventListener('mousemove', showControlsTemporary);
+    wrap.addEventListener('touchstart', showControlsTemporary, { passive:true });
+    // initial show
+    showControlsTemporary();
+
+    // open modal + block background scroll
+    modalFull.classList.add('active');
+    modalFull.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+
+    // store reference for debugging if needed
+    video._wrap = wrap;
+    video._src = src;
+  }; // end openImagePlayer
+
+  // === closeModal: cleans up the player and DOM ===
+  window.closeModal = function() {
+    // find any custom-player inside modalMedia and clean it
+    const wrapper = modalMedia.querySelector('.custom-player');
+    if (wrapper) cleanupPlayer(wrapper);
+    modalMedia.innerHTML = ''; // just in case
+    modalTitle.textContent = '';
+    modalFull.classList.remove('active');
+    modalFull.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('no-scroll');
+  };
+
+  // attach listeners to modal close controls (if present)
+  try {
+    if (modalClose && !modalClose._bound) {
+      modalClose.addEventListener('click', closeModal);
+      modalClose._bound = true;
+    }
+    if (modalFull && !modalFull._boundClick) {
+      modalFull.addEventListener('click', (e) => { if (e.target === modalFull) closeModal(); });
+      modalFull._boundClick = true;
+    }
+  } catch(e) { console.warn(e); }
+
+})();
 
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
