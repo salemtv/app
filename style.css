@@ -314,110 +314,71 @@ input:focus, select:focus, textarea:focus {
 
 .hidden { display: none; }
 
-/* -------- Custom Player (v2 Mejorado) -------- */
-.cp-watermark {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  opacity: 0.8;
-}
+/* ===== Custom player styles (paste into your styles.css) ===== */
+.custom-player { position: relative; width:100%; height:100%; background:#000; overflow:hidden; display:flex; flex-direction:column; align-items:stretch; justify-content:center; }
+.custom-video { width:100%; height:100%; object-fit:contain; background:#000; display:block; }
 
-.cp-watermark-img {
-  width: 40px;
-  height: 40px;
-}
+.modal-header { position: relative; width:100%; display:flex; align-items:center; justify-content:center; padding:8px 12px; box-sizing:border-box; }
+.modal-title { color:var(--color-text); font-weight:700; text-align:center; flex:1; }
 
-.custom-player {
-  position: relative;
-  width: 100%;
-  background: black;
-  overflow: hidden;
-}
+/* ensure close button sits above everything */
+.modal-close { position: absolute; right:10px; top:6px; z-index:99999; background:transparent; border:none; color:var(--color-text); padding:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.modal-close .material-symbols-outlined { font-size:28px; }
 
-.custom-video {
-  width: 100%;
-  height: auto;
-  display: block;
-  background: black;
-}
-
-/* Controles */
+/* Controls area overlaid at bottom */
 .cp-controls {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  left:0; right:0; bottom:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:12px;
+  box-sizing:border-box;
+  background: linear-gradient(0deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.18) 40%, transparent 100%);
+  pointer-events: auto;
   opacity: 0;
-  transition: opacity 0.3s;
-  padding: 1rem;
+  transition: opacity .25s ease;
 }
 .cp-controls.visible { opacity: 1; }
 
-.cp-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: .75rem;
-  margin-bottom: .5rem;
-}
-.cp-progress-row {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  margin-bottom: .5rem;
-}
-.cp-bar {
-  position: relative;
-  flex: 1;
-  height: 4px;
-  background: rgba(255,255,255,.2);
-  border-radius: 2px;
-}
-.cp-bar-fill {
-  position: absolute;
-  top: 0; left: 0;
-  height: 100%;
-  background: #f00;
-  border-radius: 2px;
-  width: 0%;
-}
-.cp-bar-handle {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px; height: 12px;
-  background: #f00;
-  border-radius: 50%;
-  pointer-events: none;
-}
-.cp-progress {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%;
-}
+/* center row (rev/play/fwd) */
+.cp-center { display:flex; gap:18px; align-items:center; justify-content:center; }
+.cp-btn { background:transparent; border:none; color:white; font-size:28px; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center; }
+.cp-btn:active { transform:translateY(1px); }
 
-.cp-bottom-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: .9rem;
-  color: #fff;
-}
-.cp-info { opacity: .8; }
-.cp-right {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
+/* progress row */
+.cp-progress-row { display:flex; gap:10px; align-items:center; padding:0 6px; }
+.cp-time { font-size:12px; color:rgba(255,255,255,0.9); min-width:40px; text-align:center; }
 
-.cp-btn {
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: opacity .2s;
+/* bar container */
+.cp-bar { position:relative; flex:1; height:6px; border-radius:999px; display:block; background: rgba(255,255,255,0.18); }
+.cp-bar-bg { position:absolute; inset:0; border-radius:999px; background:transparent; }
+.cp-bar-fill { position:absolute; left:0; top:0; bottom:0; width:0%; background: #ff3b30; border-radius:999px; transition: width .12s linear; pointer-events:none; }
+.cp-bar-handle { position:absolute; top:50%; left:0; transform:translate(-50%,-50%); width:12px; height:12px; border-radius:50%; background:#ff3b30; box-shadow: 0 2px 6px rgba(0,0,0,0.4); opacity:0; transition: opacity .12s; pointer-events:none; }
+
+/* show handle when hovering or interacting */
+.cp-bar:hover .cp-bar-handle,
+.cp-progress:active ~ .cp-bar-handle,
+.cp-bar-handle.active { opacity:1; }
+
+/* invisible input slider on top */
+.cp-progress { position:absolute; inset:0; width:100%; height:100%; opacity:0; -webkit-appearance:none; appearance:none; cursor:pointer; }
+
+/* bottom row with title and right controls */
+.cp-bottom-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:0 6px; }
+.cp-info { color:rgba(255,255,255,0.9); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%; }
+.cp-right { display:flex; gap:8px; align-items:center; }
+
+/* resume box (optional) */
+.cp-resume { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; background: rgba(0,0,0,0.6); }
+.cp-resume-box { background:#111; padding:12px; border-radius:8px; color:#fff; text-align:center; min-width:200px; }
+
+/* watermark */
+.cp-watermark { position:absolute; top:10px; right:10px; z-index:30; opacity:0.85; }
+.cp-watermark-img { width:38px; height:38px; border-radius:6px; }
+
+/* responsive adjustments */
+@media (max-width:480px) {
+  .cp-btn { font-size:24px; }
+  .cp-info { max-width:50%; font-size:12px; }
 }
-.cp-btn:hover { opacity: .8; }
