@@ -191,7 +191,7 @@ function renderImages(){
     // watermark (optional)
     const watermark = document.createElement('div');
     watermark.className = 'cp-watermark';
-    watermark.innerHTML = `<img class="cp-watermark-img" src="https://via.placeholder.com/48x48.png?text=Logo" alt="logo">`;
+    watermark.innerHTML = `<img class="cp-watermark-img" src="https://iili.io/FPk2m9n.png?text=Logo" alt="logo">`;
     wrap.appendChild(watermark);
 
     // controls markup
