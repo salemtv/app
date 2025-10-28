@@ -2,6 +2,12 @@
   "title": "Collections",
   "items": [
     {
+      "id": "Una Pareja Explosiva",
+      "title": "Una Pareja Explosiva",
+      "image": "https://image.tmdb.org/t/p/original/kZyMWQutqBfVYFxnhypGt0YaKcD.jpg",
+      "video": "https://hugh.cdn.rumble.cloud/video/s8/2/j/W/O/g/jWOgq.aaa.mp4"
+    },
+    {
       "id": ["Rapidos y Furiosos X", "Rápidos y Furiosos X"],
       "title": "Rápidos y Furiosos X",
       "image": "https://image.tmdb.org/t/p/original/egGtD6oAHY6qXy0QZ2fr8tDECSp.jpg",
