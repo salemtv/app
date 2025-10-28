@@ -108,26 +108,26 @@ function renderImages(){
   });
 }
 /* ---------------- Modal + Reproductor personalizado (HLS incluido) - ACTUALIZADO ---------------- */
+/* ---------------- Modal + Reproductor personalizado v2.1 ---------------- */
 (function(){
 
   function isIOS() {
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
   }
 
-  function formatTime(seconds) {
-    if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    return `${m}:${String(s).padStart(2,'0')}`;
+  function formatTime(sec) {
+    if (!isFinite(sec) || isNaN(sec)) return '0:00';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
   }
 
   window.openImagePlayer = function(item){
     const src = item.video || item.srcVideo || item.iframe || item.player || '';
     if (!src) return;
     const title = item.title || item.name || item.id || 'Video';
-    const vidKey = 'stv_resume_' + (item.id || title || src);
+    const vidKey = 'stv_resume_' + (item.id || title);
 
     modalMedia.innerHTML = '';
 
@@ -136,46 +136,25 @@ function renderImages(){
 
     const video = document.createElement('video');
     video.className = 'custom-video';
-    video.setAttribute('playsinline','');
-    video.setAttribute('webkit-playsinline','');
-    video.setAttribute('preload','metadata');
-    video.controls = false;
-    video.autoplay = false;
-    video.muted = false;
+    video.playsInline = true;
+    video.preload = 'metadata';
     wrap.appendChild(video);
 
-    const isHls = src.toLowerCase().endsWith('.m3u8');
-    if (isHls) {
+    if (src.endsWith('.m3u8')) {
       if (window.Hls && Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(src);
         hls.attachMedia(video);
-        video._hls = hls;
       } else video.src = src;
     } else video.src = src;
 
-    // Marca de agua
+    /* Marca de agua */
     const watermark = document.createElement('div');
     watermark.className = 'cp-watermark';
-    watermark.innerHTML = `<img src="https://via.placeholder.com/48x48.png?text=Logo" alt="Logo" class="cp-watermark-img">`;
+    watermark.innerHTML = `<img src="https://via.placeholder.com/48x48.png?text=Logo" alt="logo">`;
     wrap.appendChild(watermark);
 
-    // Reanudar prompt
-    const resumeBox = document.createElement('div');
-    resumeBox.className = 'cp-resume';
-    resumeBox.style.display = 'none';
-    resumeBox.innerHTML = `
-      <div class="cp-resume-box">
-        <div>¿Retomar desde <strong class="cp-time">00:00</strong>?</div>
-        <div style="margin-top:8px">
-          <button class="cp-btn cp-yes">Sí</button>
-          <button class="cp-btn cp-no">No</button>
-        </div>
-      </div>
-    `;
-    wrap.appendChild(resumeBox);
-
-    // Controles
+    /* Controles */
     const controls = document.createElement('div');
     controls.className = 'cp-controls visible';
     controls.innerHTML = `
@@ -198,7 +177,7 @@ function renderImages(){
         <div class="cp-info">${title}</div>
         <div class="cp-right">
           <button class="cp-btn cp-mute"><span class="material-symbols-outlined">volume_up</span></button>
-          ${isIOS() ? '' : `<button class="cp-btn cp-pip"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`}
+          ${document.pictureInPictureEnabled && !isIOS() ? `<button class="cp-btn cp-pip"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>` : ''}
           <button class="cp-btn cp-full"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
       </div>
@@ -212,117 +191,106 @@ function renderImages(){
     const muteBtn = controls.querySelector('.cp-mute');
     const pipBtn = controls.querySelector('.cp-pip');
     const fullBtn = controls.querySelector('.cp-full');
-    const curEl = controls.querySelector('.cp-cur');
-    const durEl = controls.querySelector('.cp-dur');
     const progressEl = controls.querySelector('.cp-progress');
     const fillEl = controls.querySelector('.cp-bar-fill');
     const handleEl = controls.querySelector('.cp-bar-handle');
-    const resumeTimeEl = resumeBox.querySelector('.cp-time');
+    const curEl = controls.querySelector('.cp-cur');
+    const durEl = controls.querySelector('.cp-dur');
 
-    function updateUI() {
-      const cur = video.currentTime || 0;
+    /* ----- FUNCIONES DE CONTROL ----- */
+    const updateUI = () => {
       const dur = video.duration || 0;
-      curEl.textContent = formatTime(cur);
-      durEl.textContent = formatTime(dur);
+      const cur = video.currentTime || 0;
       const pct = dur ? (cur / dur) * 100 : 0;
       progressEl.value = pct;
       fillEl.style.width = pct + '%';
       handleEl.style.left = pct + '%';
-    }
+      curEl.textContent = formatTime(cur);
+      durEl.textContent = formatTime(dur);
+    };
 
-    playBtn.addEventListener('click', async () => {
-      try {
-        if (video.paused) await video.play();
-        else video.pause();
-      } catch (e) { console.warn(e); }
-    });
+    playBtn.onclick = () => {
+      if (video.paused) video.play();
+      else video.pause();
+    };
 
-    revBtn.addEventListener('click', () => { video.currentTime = Math.max(0, video.currentTime - 10); updateUI(); });
-    fwdBtn.addEventListener('click', () => { video.currentTime = Math.min(video.duration, video.currentTime + 10); updateUI(); });
+    video.onplay = () => playBtn.firstElementChild.textContent = 'pause';
+    video.onpause = () => playBtn.firstElementChild.textContent = 'play_arrow';
+    revBtn.onclick = () => { video.currentTime -= 10; };
+    fwdBtn.onclick = () => { video.currentTime += 10; };
 
-    muteBtn.addEventListener('click', () => {
+    muteBtn.onclick = () => {
       video.muted = !video.muted;
-      muteBtn.querySelector('.material-symbols-outlined').textContent = video.muted ? 'volume_off' : 'volume_up';
-    });
+      muteBtn.firstElementChild.textContent = video.muted ? 'volume_off' : 'volume_up';
+    };
 
-    if (pipBtn) pipBtn.addEventListener('click', async () => {
+    if (pipBtn) pipBtn.onclick = async () => {
       try {
         if (document.pictureInPictureElement) await document.exitPictureInPicture();
-        else if (video.requestPictureInPicture) await video.requestPictureInPicture();
-      } catch (e) { console.warn(e); }
-    });
+        else await video.requestPictureInPicture();
+      } catch(e){ console.warn(e); }
+    };
 
-    fullBtn.addEventListener('click', async () => {
+    fullBtn.onclick = async () => {
       try {
-        if (!document.fullscreenElement) await wrap.requestFullscreen();
+        if (!document.fullscreenElement) await modalFull.requestFullscreen();
         else await document.exitFullscreen();
-      } catch (e) { console.warn(e); }
-    });
+      } catch(e){ console.warn(e); }
+    };
 
     document.addEventListener('fullscreenchange', () => {
-      fullBtn.querySelector('.material-symbols-outlined').textContent =
-        document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+      fullBtn.firstElementChild.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
     });
 
-    let duringSeek = false;
-    progressEl.addEventListener('input', e => {
-      duringSeek = true;
-      const pct = Number(e.target.value);
+    /* Progress bar manual */
+    let seeking = false;
+    progressEl.oninput = e => {
+      seeking = true;
+      const pct = e.target.value;
       const dur = video.duration || 0;
       fillEl.style.width = pct + '%';
       handleEl.style.left = pct + '%';
       curEl.textContent = formatTime((pct / 100) * dur);
-    });
-    progressEl.addEventListener('change', e => {
-      const pct = Number(e.target.value);
+    };
+    progressEl.onchange = e => {
+      const pct = e.target.value;
       const dur = video.duration || 0;
-      if (dur) video.currentTime = (pct / 100) * dur;
-      duringSeek = false;
-    });
+      video.currentTime = (pct / 100) * dur;
+      seeking = false;
+    };
+    video.ontimeupdate = () => { if (!seeking) updateUI(); };
+    video.onloadedmetadata = updateUI;
 
-    video.addEventListener('timeupdate', () => {
-      if (!duringSeek) updateUI();
-    });
+    /* Ocultar controles después de 3s */
+    let hideTimer;
+    const showControls = () => {
+      controls.classList.add('visible');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(()=> controls.classList.remove('visible'), 3000);
+    };
+    wrap.addEventListener('mousemove', showControls);
+    wrap.addEventListener('touchstart', showControls);
+    showControls();
 
-    video.addEventListener('play', () => {
-      playBtn.querySelector('.material-symbols-outlined').textContent = 'pause';
-    });
-    video.addEventListener('pause', () => {
-      playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
-    });
+    /* Reanudar posición */
+    const saved = JSON.parse(localStorage.getItem(vidKey) || '{}');
+    if (saved.t && saved.t > 3) video.currentTime = saved.t;
+    video.ontimeupdate = () => {
+      if (video.currentTime > 3) localStorage.setItem(vidKey, JSON.stringify({t: video.currentTime}));
+      if (!seeking) updateUI();
+    };
 
-    video.addEventListener('loadedmetadata', updateUI);
-
-    // Guardar tiempo
-    video.addEventListener('timeupdate', () => {
-      if (video.duration > 0 && video.currentTime > 3) {
-        localStorage.setItem(vidKey, JSON.stringify({ t: video.currentTime }));
-      }
-    });
-
-    // Retomar
-    try {
-      const saved = JSON.parse(localStorage.getItem(vidKey) || '{}');
-      if (saved.t && saved.t > 3) {
-        resumeBox.style.display = 'flex';
-        resumeTimeEl.textContent = formatTime(saved.t);
-        resumeBox.querySelector('.cp-yes').onclick = () => {
-          video.currentTime = saved.t;
-          resumeBox.style.display = 'none';
-          video.play();
-        };
-        resumeBox.querySelector('.cp-no').onclick = () => {
-          localStorage.removeItem(vidKey);
-          resumeBox.style.display = 'none';
-          video.play();
-        };
-      }
-    } catch(e){}
-
-    // Mostrar modal
+    /* Mostrar modal */
     modalFull.classList.add('active');
+    modalFull.setAttribute('aria-hidden','false');
     document.body.classList.add('no-scroll');
   };
+
+  /* Botón cerrar modal (asegura visibilidad) */
+  modalClose.addEventListener('click', closeModal);
+  modalFull.addEventListener('click', e => {
+    if (e.target === modalFull) closeModal();
+  });
 
 })();
 
