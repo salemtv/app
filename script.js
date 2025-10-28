@@ -107,11 +107,12 @@ function renderImages(){
     }
   });
 }
-/* ---------------- Modal + Reproductor personalizado (HLS incluido) - REEMPLAZA BLOQUE ENTREGADO ---------------- */
+/* ---------------- Modal + Reproductor personalizado (HLS incluido) - ACTUALIZADO ---------------- */
 (function(){
 
-  // Asume que ya existen en tu HTML estos elementos:
-  // modalFull, modalMedia, modalTitle, modalClose (tal como en tu código base)
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
 
   function formatTime(seconds) {
     if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
@@ -122,68 +123,44 @@ function renderImages(){
     return `${m}:${String(s).padStart(2,'0')}`;
   }
 
-  // openImagePlayer integrado
   window.openImagePlayer = function(item){
     const src = item.video || item.srcVideo || item.iframe || item.player || '';
     if (!src) return;
     const title = item.title || item.name || item.id || 'Video';
     const vidKey = 'stv_resume_' + (item.id || title || src);
 
-    // set modal title if present
-    if (typeof modalTitle !== 'undefined' && modalTitle) modalTitle.textContent = title;
-
-    // clear modal
     modalMedia.innerHTML = '';
 
-    // player wrapper
     const wrap = document.createElement('div');
     wrap.className = 'custom-player';
 
-    // video element (no native controls)
     const video = document.createElement('video');
     video.className = 'custom-video';
     video.setAttribute('playsinline','');
     video.setAttribute('webkit-playsinline','');
     video.setAttribute('preload','metadata');
     video.controls = false;
-    video.autoplay = false; // NO autoplay para evitar fullscreen forzado
+    video.autoplay = false;
     video.muted = false;
     wrap.appendChild(video);
 
-    // try HLS if .m3u8
     const isHls = src.toLowerCase().endsWith('.m3u8');
     if (isHls) {
       if (window.Hls && Hls.isSupported()) {
         const hls = new Hls();
         hls.loadSource(src);
         hls.attachMedia(video);
-        // store reference to allow cleanup (if needed)
         video._hls = hls;
-      } else {
-        // Safari handles HLS natively (iOS)
-        video.src = src;
-      }
-    } else {
-      video.src = src;
-    }
+      } else video.src = src;
+    } else video.src = src;
 
-    // --- WATERMARK: logo (cambia aquí la URL) ---
-    // Reemplaza la URL por la tuya. Ej: "https://mi.cdn.com/logo.png"
+    // Marca de agua
     const watermark = document.createElement('div');
     watermark.className = 'cp-watermark';
     watermark.innerHTML = `<img src="https://via.placeholder.com/48x48.png?text=Logo" alt="Logo" class="cp-watermark-img">`;
-    // ------------------------------ (fin watermark)
-
     wrap.appendChild(watermark);
 
-    // overlay title (appears when paused/ended)
-    const overlay = document.createElement('div');
-    overlay.className = 'cp-overlay-title';
-    overlay.textContent = title;
-    overlay.style.display = 'none';
-    wrap.appendChild(overlay);
-
-    // resume prompt container
+    // Reanudar prompt
     const resumeBox = document.createElement('div');
     resumeBox.className = 'cp-resume';
     resumeBox.style.display = 'none';
@@ -198,39 +175,37 @@ function renderImages(){
     `;
     wrap.appendChild(resumeBox);
 
-    // controls markup (con barra que incluye capa fill)
+    // Controles
     const controls = document.createElement('div');
     controls.className = 'cp-controls visible';
     controls.innerHTML = `
       <div class="cp-center">
-        <button class="cp-btn cp-rev" title="-10s"><span class="material-symbols-outlined">replay_10</span></button>
-        <button class="cp-btn cp-play" title="Play/Pause"><span class="material-symbols-outlined">play_arrow</span></button>
-        <button class="cp-btn cp-fwd" title="+10s"><span class="material-symbols-outlined">forward_10</span></button>
+        <button class="cp-btn cp-rev"><span class="material-symbols-outlined">replay_10</span></button>
+        <button class="cp-btn cp-play"><span class="material-symbols-outlined">play_arrow</span></button>
+        <button class="cp-btn cp-fwd"><span class="material-symbols-outlined">forward_10</span></button>
       </div>
       <div class="cp-progress-row">
         <span class="cp-time cp-cur">0:00</span>
-        <div class="cp-bar" aria-hidden="true">
+        <div class="cp-bar">
           <div class="cp-bar-bg"></div>
           <div class="cp-bar-fill"></div>
-          <input class="cp-progress" type="range" min="0" max="100" step="0.1" value="0" aria-label="Progreso">
+          <div class="cp-bar-handle"></div>
+          <input class="cp-progress" type="range" min="0" max="100" step="0.1" value="0">
         </div>
         <span class="cp-time cp-dur">0:00</span>
       </div>
       <div class="cp-bottom-row">
         <div class="cp-info">${title}</div>
         <div class="cp-right">
-          <button class="cp-btn cp-mute" title="Mute"><span class="material-symbols-outlined">volume_up</span></button>
-          <button class="cp-btn cp-pip" title="Picture in Picture"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>
-          <button class="cp-btn cp-full" title="Pantalla completa"><span class="material-symbols-outlined">fullscreen</span></button>
+          <button class="cp-btn cp-mute"><span class="material-symbols-outlined">volume_up</span></button>
+          ${isIOS() ? '' : `<button class="cp-btn cp-pip"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`}
+          <button class="cp-btn cp-full"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
       </div>
     `;
     wrap.appendChild(controls);
-
-    // append
     modalMedia.appendChild(wrap);
 
-    // references
     const playBtn = controls.querySelector('.cp-play');
     const revBtn = controls.querySelector('.cp-rev');
     const fwdBtn = controls.querySelector('.cp-fwd');
@@ -241,228 +216,113 @@ function renderImages(){
     const durEl = controls.querySelector('.cp-dur');
     const progressEl = controls.querySelector('.cp-progress');
     const fillEl = controls.querySelector('.cp-bar-fill');
+    const handleEl = controls.querySelector('.cp-bar-handle');
     const resumeTimeEl = resumeBox.querySelector('.cp-time');
 
-    // helper update UI
     function updateUI() {
       const cur = video.currentTime || 0;
       const dur = video.duration || 0;
       curEl.textContent = formatTime(cur);
       durEl.textContent = formatTime(dur);
       const pct = dur ? (cur / dur) * 100 : 0;
-      if (!isNaN(pct)) {
-        progressEl.value = pct;
-        fillEl.style.width = pct + '%';
-      } else {
-        progressEl.value = 0;
-        fillEl.style.width = '0%';
-      }
+      progressEl.value = pct;
+      fillEl.style.width = pct + '%';
+      handleEl.style.left = pct + '%';
     }
 
-    // play/pause
     playBtn.addEventListener('click', async () => {
       try {
-        if (video.paused || video.ended) {
-          await video.play();
-        } else {
-          video.pause();
-        }
-      } catch (e) { console.warn('play err', e); }
+        if (video.paused) await video.play();
+        else video.pause();
+      } catch (e) { console.warn(e); }
     });
 
-    // rev/fwd
-    revBtn.addEventListener('click', () => { video.currentTime = Math.max(0, (video.currentTime || 0) - 10); updateUI(); });
-    fwdBtn.addEventListener('click', () => { video.currentTime = Math.min((video.duration || Infinity), (video.currentTime || 0) + 10); updateUI(); });
+    revBtn.addEventListener('click', () => { video.currentTime = Math.max(0, video.currentTime - 10); updateUI(); });
+    fwdBtn.addEventListener('click', () => { video.currentTime = Math.min(video.duration, video.currentTime + 10); updateUI(); });
 
-    // mute
     muteBtn.addEventListener('click', () => {
       video.muted = !video.muted;
       muteBtn.querySelector('.material-symbols-outlined').textContent = video.muted ? 'volume_off' : 'volume_up';
     });
 
-    // PiP (solo si está disponible)
-    pipBtn.addEventListener('click', async () => {
+    if (pipBtn) pipBtn.addEventListener('click', async () => {
       try {
-        if (document.pictureInPictureElement) {
-          await document.exitPictureInPicture();
-        } else if (video.requestPictureInPicture) {
-          await video.requestPictureInPicture();
-        } else {
-          console.warn('PiP no soportado en este navegador');
-        }
-      } catch (e) { console.warn('PiP error', e); }
+        if (document.pictureInPictureElement) await document.exitPictureInPicture();
+        else if (video.requestPictureInPicture) await video.requestPictureInPicture();
+      } catch (e) { console.warn(e); }
     });
 
-    // Fullscreen (manual) -> PREFERENCIA: usar video.requestFullscreen() para que boton funcione en más dispositivos
     fullBtn.addEventListener('click', async () => {
       try {
-        if (!document.fullscreenElement) {
-          if (video.requestFullscreen) await video.requestFullscreen();
-          else if (wrap.requestFullscreen) await wrap.requestFullscreen();
-        } else {
-          await document.exitFullscreen();
-        }
-      } catch (e) { console.warn('fs err', e); }
+        if (!document.fullscreenElement) await wrap.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (e) { console.warn(e); }
     });
 
-    // fullscreenchange -> cambiar icono
-    document.addEventListener('fullscreenchange', ()=>{
-      try {
-        fullBtn.querySelector('.material-symbols-outlined').textContent =
-          document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
-      } catch(e){}
+    document.addEventListener('fullscreenchange', () => {
+      fullBtn.querySelector('.material-symbols-outlined').textContent =
+        document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
     });
 
-    // progress input seeking
     let duringSeek = false;
-    progressEl.addEventListener('input', (ev) => {
-      const pct = Number(ev.target.value || 0);
-      const dur = video.duration || 0;
-      if (dur) {
-        const t = (pct / 100) * dur;
-        curEl.textContent = formatTime(t);
-      }
+    progressEl.addEventListener('input', e => {
       duringSeek = true;
+      const pct = Number(e.target.value);
+      const dur = video.duration || 0;
       fillEl.style.width = pct + '%';
+      handleEl.style.left = pct + '%';
+      curEl.textContent = formatTime((pct / 100) * dur);
     });
-    progressEl.addEventListener('change', (ev) => {
-      const pct = Number(ev.target.value || 0);
+    progressEl.addEventListener('change', e => {
+      const pct = Number(e.target.value);
       const dur = video.duration || 0;
       if (dur) video.currentTime = (pct / 100) * dur;
       duringSeek = false;
     });
 
-    // update while playing
     video.addEventListener('timeupdate', () => {
       if (!duringSeek) updateUI();
-      // throttle-save to localStorage (approx every 3s)
-      try {
-        const raw = localStorage.getItem(vidKey) || '{}';
-        const parsed = raw ? JSON.parse(raw) : {};
-        if (!parsed.t || Math.abs((parsed.t||0) - video.currentTime) > 3) {
-          localStorage.setItem(vidKey, JSON.stringify({ t: video.currentTime, s: Date.now() }));
-        }
-      } catch (e) {}
+    });
+
+    video.addEventListener('play', () => {
+      playBtn.querySelector('.material-symbols-outlined').textContent = 'pause';
+    });
+    video.addEventListener('pause', () => {
+      playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
     });
 
     video.addEventListener('loadedmetadata', updateUI);
 
-    video.addEventListener('play', () => {
-      overlay.style.display = 'none';
-      playBtn.querySelector('.material-symbols-outlined').textContent = 'pause';
-      showControlsTemporary();
-    });
-    video.addEventListener('pause', () => {
-      overlay.style.display = 'flex';
-      playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
-      showControlsTemporary();
-    });
-    video.addEventListener('ended', () => {
-      overlay.style.display = 'flex';
-      playBtn.querySelector('.material-symbols-outlined').textContent = 'play_arrow';
-      try { localStorage.removeItem(vidKey); } catch(e){}
+    // Guardar tiempo
+    video.addEventListener('timeupdate', () => {
+      if (video.duration > 0 && video.currentTime > 3) {
+        localStorage.setItem(vidKey, JSON.stringify({ t: video.currentTime }));
+      }
     });
 
-    // resume prompt if saved > 3s
+    // Retomar
     try {
-      const raw = localStorage.getItem(vidKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.t && parsed.t > 3) {
-          resumeBox.style.display = 'flex';
-          resumeTimeEl.textContent = formatTime(parsed.t);
-          resumeBox.querySelector('.cp-yes').addEventListener('click', () => {
-            video.currentTime = parsed.t;
-            resumeBox.style.display = 'none';
-            video.play().catch(()=>{});
-          });
-          resumeBox.querySelector('.cp-no').addEventListener('click', () => {
-            localStorage.removeItem(vidKey);
-            resumeBox.style.display = 'none';
-            video.currentTime = 0;
-            video.play().catch(()=>{});
-          });
-        }
+      const saved = JSON.parse(localStorage.getItem(vidKey) || '{}');
+      if (saved.t && saved.t > 3) {
+        resumeBox.style.display = 'flex';
+        resumeTimeEl.textContent = formatTime(saved.t);
+        resumeBox.querySelector('.cp-yes').onclick = () => {
+          video.currentTime = saved.t;
+          resumeBox.style.display = 'none';
+          video.play();
+        };
+        resumeBox.querySelector('.cp-no').onclick = () => {
+          localStorage.removeItem(vidKey);
+          resumeBox.style.display = 'none';
+          video.play();
+        };
       }
-    } catch (e) {}
+    } catch(e){}
 
-    // touch gestures: single tap toggle, double tap skip
-    if ('ontouchstart' in window) {
-      let lastTap = 0;
-      wrap.addEventListener('touchend', (ev) => {
-        // ignore taps on controls (if user tapped the input etc.)
-        if (ev.target.closest('.cp-controls') && !ev.target.closest('.cp-center')) return;
-        const now = Date.now();
-        const touch = ev.changedTouches[0];
-        const rect = wrap.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const half = rect.width / 2;
-        const dt = now - lastTap;
-        if (dt < 300 && dt > 0) {
-          if (x < half) video.currentTime = Math.max(0, video.currentTime - 10);
-          else video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
-        } else {
-          if (video.paused) video.play().catch(()=>{}); else video.pause();
-        }
-        lastTap = now;
-      }, { passive:true });
-    }
-
-    // auto-hide controls after inactivity (3s)
-    let hideTimer = null;
-    function showControlsTemporary() {
-      controls.classList.add('visible');
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => {
-        if (!video.paused) controls.classList.remove('visible');
-      }, 3000);
-    }
-    // show on mousemove / touch
-    wrap.addEventListener('mousemove', showControlsTemporary);
-    wrap.addEventListener('touchstart', showControlsTemporary, { passive:true });
-
-    // initial show
-    showControlsTemporary();
-
-    // open modal
+    // Mostrar modal
     modalFull.classList.add('active');
-    modalFull.setAttribute('aria-hidden','false');
     document.body.classList.add('no-scroll');
-
-    // store references for debugging if needed
-    video._wrap = wrap;
-    video._src = src;
   };
-
-  // closeModal (cleans up)
-  window.closeModal = function(){
-    // stop and destroy HLS if present
-    const vid = modalMedia.querySelector('video');
-    if (vid) {
-      try { vid.pause(); } catch(e){}
-      if (vid._hls && typeof vid._hls.destroy === 'function') {
-        try { vid._hls.destroy(); } catch(e){}
-      }
-      try { vid.src = ''; } catch(e){}
-    }
-    modalMedia.innerHTML = '';
-    if (typeof modalTitle !== 'undefined' && modalTitle) modalTitle.textContent = '';
-    modalFull.classList.remove('active');
-    modalFull.setAttribute('aria-hidden','true');
-    document.body.classList.remove('no-scroll');
-  };
-
-  // add event listeners (if not already)
-  try {
-    if (modalClose && !modalClose._boundClose) {
-      modalClose.addEventListener('click', closeModal);
-      modalClose._boundClose = true;
-    }
-    if (modalFull && !modalFull._boundClick) {
-      modalFull.addEventListener('click', e => { if (e.target === modalFull) closeModal(); });
-      modalFull._boundClick = true;
-    }
-  } catch(e){}
 
 })();
 
