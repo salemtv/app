@@ -419,23 +419,32 @@ if ('ontouchstart' in window) {
   }, { passive: true });
 }
 
-    // auto-hide controls (3s)
-    let hideTimer = null;
-    function showControlsTemporary() {
-      controls.classList.add('visible');
-      clearTimeout(hideTimer);
-      // show handle during visible
-      handleEl.style.opacity = '1';
-      hideTimer = setTimeout(()=> {
-        if (!video.paused) {
-          controls.classList.remove('visible');
-          handleEl.style.opacity = '';
-        }
-      }, 3000);
+    // auto-hide controls (3s) + sync close button visibility
+let hideTimer = null;
+
+function showControlsTemporary() {
+  controls.classList.add('visible');
+  clearTimeout(hideTimer);
+
+  // show handle + close button
+  handleEl.style.opacity = '1';
+  if (modalCloseEl) modalCloseEl.classList.remove('hidden');
+
+  hideTimer = setTimeout(() => {
+    if (!video.paused) {
+      controls.classList.remove('visible');
+      handleEl.style.opacity = '';
+      if (modalCloseEl) modalCloseEl.classList.add('hidden');
     }
-    wrap.addEventListener('mousemove', showControlsTemporary);
-    wrap.addEventListener('touchstart', showControlsTemporary, { passive:true });
-    showControlsTemporary();
+  }, 3000);
+}
+
+// Show on mouse/touch
+wrap.addEventListener('mousemove', showControlsTemporary);
+wrap.addEventListener('touchstart', showControlsTemporary, { passive:true });
+
+// initial show when opening
+showControlsTemporary();
 
     // open modal
     modalFullEl.classList.add('active');
