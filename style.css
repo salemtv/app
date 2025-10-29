@@ -412,3 +412,6 @@ input:focus, select:focus, textarea:focus {
   .cp-btn { font-size:24px; }
   .cp-info { max-width:50%; font-size:12px; }
 }
+.cp-rev, .cp-play, .cp-fwd {
+font-size: 20px;
+}
