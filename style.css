@@ -347,9 +347,60 @@ input:focus, select:focus, textarea:focus {
 .cp-info { color:rgba(255,255,255,0.9); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%; }
 .cp-right { display:flex; gap:8px; align-items:center; }
 
-/* resume box (optional) */
-.cp-resume { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:40; background: rgba(0,0,0,0.6); }
-.cp-resume-box { background:var(--color-secondary); padding:12px 20px; border-radius:8px; color:#fff; text-align:center; min-width:200px; }
+/* ----- Resume prompt styling ----- */
+.cp-resume {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.cp-resume-box {
+  background: rgba(30,30,30,0.9);
+  border-radius: 8px;
+  padding: 16px 20px;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  max-width: 260px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: fadeIn 0.25s ease;
+}
+
+.cp-resume-text {
+  margin-bottom: 12px;
+}
+
+.cp-resume-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cp-resume-actions .cp-btn {
+  background: #222;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+
+.cp-resume-actions .cp-btn:hover,
+.cp-resume-actions .cp-btn:active {
+  background: var(--color-bg, #ff0033);
+  transform: scale(0.97);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
 /* watermark */
 .cp-watermark { position:absolute; top:20px; right:20px; z-index:30; opacity:0.85; }
 .cp-watermark-img { width:22px; height:22px; border:0;opacity: .18; }
