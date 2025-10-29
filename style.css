@@ -375,7 +375,7 @@ input:focus, select:focus, textarea:focus {
 
 /* watermark */
 .cp-watermark { position:absolute; top:15px; right:15px; z-index:30; opacity:0.85; }
-.cp-watermark-img { width:20px; height:20px; border-radius:0px;opacity: .3; }
+.cp-watermark-img { width:20px; height:20px; border-radius:0px;opacity: .2; }
 
 /* responsive adjustments */
 @media (max-width:480px) {
