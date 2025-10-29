@@ -359,7 +359,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .cp-resume-box {
-  background: rgba(30,30,30,0.9);
+  background: var(--color-secondary);
   border-radius: 8px;
   padding: 16px 20px;
   text-align: center;
@@ -382,7 +382,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .cp-resume-actions .cp-btn {
-  background: #222;
+  background: var(--color-button);
   color: #fff;
   border: none;
   padding: 8px 16px;
