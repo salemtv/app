@@ -367,8 +367,8 @@ video.addEventListener('pause', () => {
         resumeBox.className = 'cp-resume';
         resumeBox.innerHTML = `
           <div class="cp-resume-box">
-            <div>¿Deseas retomar desde <strong class="cp-time">${formatTime(saved.t)}</strong>?</div>
-            <div style="margin-top:8px">
+            <div class="cp-resume-text">¿Deseas retomar desde <strong class="cp-time">${formatTime(saved.t)}</strong>?</div>
+            <div class="cp-resume-actions">
               <button class="cp-btn cp-yes">Sí</button>
               <button class="cp-btn cp-no">No</button>
             </div>
