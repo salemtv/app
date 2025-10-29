@@ -297,7 +297,15 @@ input:focus, select:focus, textarea:focus {
 /* ensure close button sits above everything */
 .modal-close { position: absolute; right:10px; top:6px; z-index:99999; background:transparent; border:none; color:var(--color-text); padding:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .modal-close .material-symbols-outlined { font-size:28px; }
+.modal-close {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
 
+.modal-close.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 /* Controls area overlaid at bottom */
 .cp-controls {
   position: absolute;
