@@ -178,22 +178,7 @@ footer{
     position:relative;
     padding:0;
     }
-    .modal-header {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        z-index: 10;
-        padding: 1rem;
-        position: absolute!important;
-        top: 0;
-        left: 0;
-        right: 0;
-        }
-    .modal-title {
-    color:var(--color-text); font-weight:700; font-size:var(--font);
-    background:transparent;
-    }
+    
     .modal-media {
         width:100vw;
         margin: 0;
@@ -219,19 +204,7 @@ footer{
         padding: 0!important;
         object-fit: contain;
     }
-    .modal-close {
-        background:transparent;
-        border:none;
-        color:var(--color-text);
-        padding:0;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-    }
-    .modal-close .material-symbols-outlined {
-        font-size:28px;
-    } /* tamaño correcto del símbolo */
+    
     @media (max-width:480px){
       .modal-close .material-symbols-outlined { font-size:26px; }
       .modal-inner { padding:0; }
