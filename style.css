@@ -326,7 +326,7 @@ input:focus, select:focus, textarea:focus {
 
 /* progress row */
 .cp-progress-row { display:flex; gap:10px; align-items:center; padding:0 6px; }
-.cp-time { font-size: var(--font); color:rgba(255,255,255,0.9); min-width:40px; text-align:center; }
+.cp-time { font-size: var(--font-xs); color:rgba(255,255,255,0.9); min-width:40px; text-align:center; }
 
 /* bar container */
 .cp-bar { position:relative; flex:1; height:6px; border-radius:999px; display:block; background: rgba(255,255,255,0.18); }
@@ -370,9 +370,11 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   animation: fadeIn 0.25s ease;
 }
-
 .cp-resume-text {
   margin-bottom: 12px;
+}
+.cp-resume-text strong {
+  font-size: var(--font);
 }
 
 .cp-resume-actions {
