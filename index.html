@@ -61,50 +61,26 @@
   </footer>
 <script src="script.js"></script>
 <script>
-(function(){
-  const adIndicators = [
-    /ad(s|vert|server)/i,
-    /banner/i,
-    /doubleclick\.net/i,
-    /googlesyndication\.com/i,
-    /adservice/i,
-    /adsbygoogle/i
-  ];
+/* Bloquear/neutralizar window.open y window.showModalDialog (antiguo) */
+(function() {
+  const origOpen = window.open;
+  window.open = function(url, name, specs) {
+    console.warn('Bloqueado intento de abrir ventana:', url, name);
+    // devuelve un objeto "falso" que algunas bibliotecas esperan
+    return {
+      closed: true,
+      close() {},
+      focus() {},
+      location: { href: '' }
+    };
+    // Si quisieras permitir algunas URLs, puedes filtrarlas aquí.
+  };
 
-  function looksLikeAd(node) {
-    if (!node) return false;
-    if (node.tagName === 'IFRAME') return true;
-    const attrs = (node.className || '') + ' ' + (node.id || '') + ' ' + (node.getAttribute && node.getAttribute('src') || '');
-    return adIndicators.some(rx => rx.test(attrs));
+  if (window.showModalDialog) {
+    window.showModalDialog = function() {
+      console.warn('showModalDialog bloqueado');
+    };
   }
-
-  function removeIfAd(node) {
-    try {
-      if (looksLikeAd(node)) {
-        node.remove();
-        console.log('Ad eliminado:', node);
-        return true;
-      }
-    } catch(e){}
-    return false;
-  }
-
-  // Observa añadidos al DOM
-  const mo = new MutationObserver(muts => {
-    for (const m of muts) {
-      for (const n of m.addedNodes) {
-        if (n.nodeType !== 1) continue;
-        if (removeIfAd(n)) continue;
-        // también busca descendientes
-        n.querySelectorAll && n.querySelectorAll('iframe, [id], [class]').forEach(removeIfAd);
-      }
-    }
-  });
-
-  mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
-
-  // limpieza inicial
-  document.querySelectorAll('iframe, [id], [class]').forEach(removeIfAd);
 })();
 </script>
 </body>
