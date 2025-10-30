@@ -443,6 +443,3 @@ font-size: 32px;
   pointer-events: none; /* no bloquea clics */
   user-select: none;
 }
-.card:has(.img-number:contains("2025")) .img-number {
-  background: blue!important;
-}
