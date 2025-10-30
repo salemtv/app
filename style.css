@@ -443,3 +443,4 @@ font-size: 28px;
   pointer-events: none; /* no bloquea clics */
   user-select: none;
 }
+.img-number[data-tag="2025"] { background: green; }
