@@ -413,7 +413,7 @@ input:focus, select:focus, textarea:focus {
   .cp-info { max-width:50%; font-size:12px; }
 }
 .cp-rev span, .cp-play span, .cp-fwd span {
-font-size: 28px;
+font-size: 32px;
 }
 /**********/
 .img-wrap {
