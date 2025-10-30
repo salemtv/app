@@ -122,7 +122,7 @@ function renderImages(){
   }
 });
 }
-/* ---------------- Custom player robust v1.1 (iOS/Android native fullscreen + Cast) ---------------- */
+/* ---------------- Custom player robust v1.2 (iOS/Android native fullscreen + Cast + resume + gestures) ---------------- */
 (function(){
   const modalFullEl = document.getElementById('modalFull');
   const modalMediaEl = document.getElementById('modalMedia');
@@ -156,9 +156,8 @@ function renderImages(){
     const controls=document.createElement('div'); controls.className='cp-controls visible';
     const showPip=!isStandaloneIOS()&&supportsPiP(video);
 
-    /* 🆕 Detectar soporte AirPlay / Cast */
-    const supportsAirPlay = !!window.WebKitPlaybackTargetAvailabilityEvent;
-    const supportsCast = !!(window.chrome && chrome.cast);
+    const supportsAirPlay=!!window.WebKitPlaybackTargetAvailabilityEvent;
+    const supportsCast=!!(window.chrome&&chrome.cast);
 
     controls.innerHTML=`
       <div class="cp-center">
@@ -180,7 +179,7 @@ function renderImages(){
         <div class="cp-info">${title}</div>
         <div class="cp-right">
           <button class="cp-btn cp-mute" title="Mute"><span class="material-symbols-outlined">volume_up</span></button>
-          ${showPip ? `<button class="cp-btn cp-pip" title="Picture in Picture"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>` : ''}
+          ${showPip?`<button class="cp-btn cp-pip" title="Picture in Picture"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`:''}
           ${(supportsAirPlay||supportsCast)?`<button class="cp-btn cp-cast" title="Transmitir"><span class="material-symbols-outlined">cast</span></button>`:''}
           <button class="cp-btn cp-full" title="Fullscreen"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
@@ -205,7 +204,7 @@ function renderImages(){
       if(!isNaN(pct)){progressEl.value=pct;fillEl.style.width=pct+'%';handleEl.style.left=pct+'%';}
       curEl.textContent=formatTime(cur);durEl.textContent=formatTime(dur);}
 
-    // Play lock (optimizado)
+    // --- Play antirebote ---
     let playLock=false;
     playBtn.addEventListener('click',async()=>{if(playLock)return;playLock=true;try{
       if(video.paused||video.ended){await video.play().catch(()=>{});}else{video.pause();}
@@ -213,11 +212,14 @@ function renderImages(){
     video.addEventListener('play',()=>{playBtn.firstElementChild.textContent='pause';});
     video.addEventListener('pause',()=>{playBtn.firstElementChild.textContent='play_arrow';});
 
+    // --- Skip ---
     revBtn.addEventListener('click',()=>{video.currentTime=Math.max(0,(video.currentTime||0)-10);updateUI();});
     fwdBtn.addEventListener('click',()=>{video.currentTime=Math.min((video.duration||Infinity),(video.currentTime||0)+10);updateUI();});
 
+    // --- Mute ---
     muteBtn.addEventListener('click',()=>{video.muted=!video.muted;muteBtn.firstElementChild.textContent=video.muted?'volume_off':'volume_up';});
 
+    // --- PiP ---
     if(pipBtn)pipBtn.addEventListener('click',async()=>{try{
       if(typeof video.requestPictureInPicture==='function'){
         if(document.pictureInPictureElement)await document.exitPictureInPicture();
@@ -229,62 +231,28 @@ function renderImages(){
       }
     }catch(e){console.warn('pip err',e);}});
 
-    /* 🆕 CAST / AIRPLAY botón */
+    // --- AirPlay / Cast ---
     if(castBtn){
       castBtn.addEventListener('click',()=>{
         try{
-          if(supportsAirPlay && typeof video.webkitShowPlaybackTargetPicker==='function'){
-            video.webkitShowPlaybackTargetPicker();
-          }else if(supportsCast){
-            // Para Google Cast (Chrome) se requiere el SDK cargado
-            alert('Pulsa el botón Cast de tu navegador o barra superior para transmitir.');
-          }else{
-            alert('Tu dispositivo no admite AirPlay o Cast.');
-          }
+          if(supportsAirPlay&&typeof video.webkitShowPlaybackTargetPicker==='function'){video.webkitShowPlaybackTargetPicker();}
+          else if(supportsCast){alert('Pulsa el botón Cast del navegador para transmitir.');}
+          else{alert('Tu dispositivo no admite AirPlay ni Cast.');}
         }catch(e){console.warn('cast err',e);}
       });
     }
 
-    /* 🆕 Pantalla completa nativa iOS/Android + fallback desktop */
+    // --- Fullscreen nativo ---
     fullBtn.addEventListener('click',async()=>{
       try{
-        // Si ya está fullscreen, salir
-        if(document.fullscreenElement){
-          if(document.exitFullscreen)await document.exitFullscreen();
-          else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
-          fullBtn.firstElementChild.textContent='fullscreen';
-          return;
-        }
-
-        // Nativo iOS y Android (modo real del sistema)
-        if(typeof video.webkitEnterFullscreen==='function'){
-          video.webkitEnterFullscreen();
-          fullBtn.firstElementChild.textContent='fullscreen_exit';
-          return;
-        }
-        if(typeof video.webkitEnterFullScreen==='function'){
-          video.webkitEnterFullScreen();
-          fullBtn.firstElementChild.textContent='fullscreen_exit';
-          return;
-        }
-
-        // Fallback (desktop u otros)
-        if(video.requestFullscreen){
-          await video.requestFullscreen();
-          fullBtn.firstElementChild.textContent='fullscreen_exit';
-        }else if(wrap.requestFullscreen){
-          await wrap.requestFullscreen();
-          fullBtn.firstElementChild.textContent='fullscreen_exit';
-        }
+        if(document.fullscreenElement){if(document.exitFullscreen)await document.exitFullscreen();else if(document.webkitExitFullscreen)document.webkitExitFullscreen();fullBtn.firstElementChild.textContent='fullscreen';return;}
+        if(typeof video.webkitEnterFullscreen==='function'){video.webkitEnterFullscreen();fullBtn.firstElementChild.textContent='fullscreen_exit';return;}
+        if(typeof video.requestFullscreen==='function'){await video.requestFullscreen();fullBtn.firstElementChild.textContent='fullscreen_exit';return;}
       }catch(e){console.warn('fullscreen err',e);}
     });
+    document.addEventListener('fullscreenchange',()=>{const isFs=!!document.fullscreenElement;fullBtn.firstElementChild.textContent=isFs?'fullscreen_exit':'fullscreen';});
 
-    document.addEventListener('fullscreenchange',()=>{
-      const isFs=!!document.fullscreenElement;
-      fullBtn.firstElementChild.textContent=isFs?'fullscreen_exit':'fullscreen';
-    });
-
-    // auto-hide controls sync close
+    // --- Auto-hide controls + botón X sincronizado ---
     let hideTimer=null;
     function showControlsTemporary(){
       controls.classList.add('visible');clearTimeout(hideTimer);
@@ -302,10 +270,49 @@ function renderImages(){
     wrap.addEventListener('touchstart',showControlsTemporary,{passive:true});
     showControlsTemporary();
 
-    // (resto: timeupdate, resume, gestures, etc. sin cambios)
-    video.addEventListener('timeupdate',()=>{updateUI();});
+    // --- Progress bar ---
+    let duringSeek=false;
+    progressEl.addEventListener('input',(e)=>{duringSeek=true;const pct=Number(e.target.value||0);const dur=video.duration||0;
+      fillEl.style.width=pct+'%';handleEl.style.left=pct+'%';if(dur)curEl.textContent=formatTime((pct/100)*dur);handleEl.classList.add('active');});
+    progressEl.addEventListener('change',(e)=>{const pct=Number(e.target.value||0);const dur=video.duration||0;if(dur)video.currentTime=(pct/100)*dur;duringSeek=false;setTimeout(()=>handleEl.classList.remove('active'),250);});
+    video.addEventListener('timeupdate',()=>{if(!duringSeek)updateUI();});
     video.addEventListener('loadedmetadata',updateUI);
 
+    // --- Resume prompt ---
+    try{
+      const saved=JSON.parse(localStorage.getItem(vidKey)||'{}');
+      if(saved&&saved.t&&saved.t>3){
+        const resumeBox=document.createElement('div');
+        resumeBox.className='cp-resume';
+        resumeBox.innerHTML=`
+          <div class="cp-resume-box">
+            <div class="cp-resume-text">¿Deseas retomar desde <strong class="cp-time">${formatTime(saved.t)}</strong>?</div>
+            <div class="cp-resume-actions">
+              <button class="cp-btn cp-yes">Sí</button>
+              <button class="cp-btn cp-no">No</button>
+            </div>
+          </div>`;
+        wrap.appendChild(resumeBox);
+        const yes=resumeBox.querySelector('.cp-yes'),no=resumeBox.querySelector('.cp-no');
+        [yes,no].forEach(btn=>btn.addEventListener('touchstart',()=>btn.classList.add('active')));
+        [yes,no].forEach(btn=>btn.addEventListener('touchend',()=>btn.classList.remove('active')));
+        resumeBox.querySelector('.cp-yes').onclick=()=>{video.currentTime=saved.t;resumeBox.remove();video.play().catch(()=>{});};
+        resumeBox.querySelector('.cp-no').onclick=()=>{localStorage.removeItem(vidKey);resumeBox.remove();video.play().catch(()=>{});};
+      }
+    }catch(e){}
+
+    // --- Gestos táctiles ---
+    if('ontouchstart'in window){
+      let lastTap=0,tapTimeout=null;
+      wrap.addEventListener('touchend',(ev)=>{
+        const target=ev.target;if(target.closest('.cp-btn')||target.closest('.cp-progress')||target.closest('.cp-bar'))return;
+        const now=Date.now(),dt=now-lastTap,touch=ev.changedTouches[0],rect=wrap.getBoundingClientRect(),x=touch.clientX-rect.left,half=rect.width/2;
+        if(dt<300&&dt>0){clearTimeout(tapTimeout);if(x<half)video.currentTime=Math.max(0,video.currentTime-10);else video.currentTime=Math.min(video.duration||Infinity,video.currentTime+10);lastTap=0;return;}
+        tapTimeout=setTimeout(()=>{if(video.paused)video.play().catch(()=>{});else video.pause();},250);lastTap=now;
+      },{passive:true});
+    }
+
+    // --- Open modal ---
     modalFullEl.classList.add('active');
     modalFullEl.setAttribute('aria-hidden','false');
     document.body.classList.add('no-scroll');
@@ -314,7 +321,7 @@ function renderImages(){
 
   window.closeModal=function(){
     const wrapper=modalMediaEl.querySelector('.custom-player');
-    cleanup(wrapper); modalMediaEl.innerHTML='';
+    cleanup(wrapper);modalMediaEl.innerHTML='';
     if(modalTitleEl)modalTitleEl.textContent='';
     if(modalFullEl){modalFullEl.classList.remove('active');modalFullEl.setAttribute('aria-hidden','true');}
     document.body.classList.remove('no-scroll');
@@ -324,7 +331,7 @@ function renderImages(){
     if(modalCloseEl&&!modalCloseEl._bound){modalCloseEl.addEventListener('click',closeModal);modalCloseEl._bound=true;}
     if(modalFullEl&&!modalFullEl._boundClick){modalFullEl.addEventListener('click',(e)=>{if(e.target===modalFullEl)closeModal();});modalFullEl._boundClick=true;}
   }catch(e){console.warn(e);}
-})();// IIFE end
+})();
 
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
