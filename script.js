@@ -70,16 +70,25 @@ function renderImages(){
   const grid = document.createElement('div');
   grid.className = 'grid';
   (p.items || []).forEach(item => {
-    const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
-    const name = item.id || item.name || item.title || ('img-'+Math.random().toString(36).slice(2,8));
-    const c = document.createElement('div');
-    c.className = 'card';
-    c.dataset.img = name;
-    c.innerHTML = `<img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
-                   <div class="iname">${escapeHtml(name)}</div>`;
-    c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
-    grid.appendChild(c);
-  });
+  const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
+  const name = item.id || item.name || item.title || ('img-'+Math.random().toString(36).slice(2,8));
+  const tag = item.tag || ''; // etiqueta visible dentro de la imagen
+
+  const c = document.createElement('div');
+  c.className = 'card';
+  c.dataset.img = name;
+
+  c.innerHTML = `
+    <div class="img-wrap">
+      <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
+      ${tag ? `<div class="img-number">${escapeHtml(tag)}</div>` : ''}
+    </div>
+    <div class="iname">${escapeHtml(name)}</div>
+  `;
+
+  c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
+  grid.appendChild(c);
+});
   container.appendChild(grid);
   main.appendChild(container);
 
