@@ -364,7 +364,7 @@ function renderEnVi(){
     <h3 style="margin-bottom:8px">${p.title}</h3>
     <div class="iframe-container">
       <div class="loader" id="loader"><span></span></div>
-      <iframe id="videoIframe" allow="picture-in-picture" playsinline webkit-playsinline allowfullscreen></iframe>
+      <iframe id="videoIframe" allow="picture-in-picture" sandbox="allow-same-origin allow-scripts" playsinline webkit-playsinline allowfullscreen></iframe>
     </div>
     <div class="controls" style="margin-top:8px">
       <div class="custom-selector" id="canalSelectorCustom">
@@ -483,7 +483,7 @@ function renderEnVi2(){
     <h3 style="margin-bottom:8px">${p.title}</h3>
     <div class="iframe-container">
       <div class="loader" id="loader2"><span></span></div>
-      <iframe id="videoIframe2" allow="picture-in-picture" playsinline webkit-playsinline allowfullscreen></iframe>
+      <iframe id="videoIframe2" allow="picture-in-picture" sandbox="allow-same-origin allow-scripts" playsinline webkit-playsinline allowfullscreen></iframe>
     </div>
     <div class="controls" style="margin-top:8px">
       <div class="custom-selector" id="canalSelectorCustom2">
