@@ -122,7 +122,7 @@ function renderImages(){
   }
 });
 }
-/* ---------------- Custom player robust v1.2 (iOS/Android native fullscreen + Cast + resume + gestures) ---------------- */
+/* ---------------- Custom player robust v1.3 (iOS/Android native fullscreen + Cast + AirPlay + resume + gestures) ---------------- */
 (function(){
   const modalFullEl = document.getElementById('modalFull');
   const modalMediaEl = document.getElementById('modalMedia');
@@ -136,6 +136,19 @@ function renderImages(){
   function supportsPiP(video){ try{ if('pictureInPictureEnabled'in document&&typeof video.requestPictureInPicture==='function')return true;
     if(typeof video.webkitSupportsPresentationMode==='function'&&typeof video.webkitSetPresentationMode==='function'){return !!video.webkitSupportsPresentationMode&&video.webkitSupportsPresentationMode('picture-in-picture');}}catch(e){} return false;}
   function cleanup(wrapper){ if(!wrapper)return; const v=wrapper.querySelector('video'); if(v){try{v.pause();}catch(e){} if(v._hls&&typeof v._hls.destroy==='function'){try{v._hls.destroy();}catch(e){}} try{v.src='';}catch(e){}} wrapper.remove(); }
+
+  // --- Inicializar Google Cast (si está disponible) ---
+  if (window.chrome && chrome.cast) {
+    window['__onGCastApiAvailable'] = function(isAvailable) {
+      if (isAvailable) {
+        const context = cast.framework.CastContext.getInstance();
+        context.setOptions({
+          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+        });
+      }
+    };
+  }
 
   window.openImagePlayer=function(item){
     const src=item.video||item.srcVideo||item.iframe||item.player||''; if(!src)return;
@@ -152,7 +165,7 @@ function renderImages(){
     if(isHls&&window.Hls&&Hls.isSupported()){const hls=new Hls();hls.loadSource(src);hls.attachMedia(video);video._hls=hls;}else{video.src=src;}
 
     const watermark=document.createElement('div'); watermark.className='cp-watermark';
-    watermark.innerHTML=`<img class="cp-watermark-img" src="https://iili.io/FPk2m9n.png?text=Logo" alt="logo">`; wrap.appendChild(watermark);
+    watermark.innerHTML=`<img class="cp-watermark-img" src="https://iili.io/FPk2m9n.png" alt="logo">`; wrap.appendChild(watermark);
 
     const controls=document.createElement('div'); controls.className='cp-controls visible';
     const showPip=!isStandaloneIOS()&&supportsPiP(video);
@@ -239,15 +252,15 @@ function renderImages(){
       }
     }catch(e){console.warn('pip err',e);}});
 
-    // --- AirPlay / Cast ---
+    // --- AirPlay / Cast funcional ---
     if(castBtn){
       castBtn.addEventListener('click',()=>{
         try{
           if(supportsAirPlay && typeof video.webkitShowPlaybackTargetPicker==='function'){
             video.webkitShowPlaybackTargetPicker();
-          } else if(supportsCast && window.chrome && chrome.cast){
-            const ctx = cast.framework?.CastContext?.getInstance?.();
-            if (ctx) ctx.requestSession();
+          } else if (supportsCast && window.chrome && chrome.cast) {
+            const ctx = cast.framework.CastContext.getInstance();
+            if (ctx) ctx.requestSession().catch(err => console.warn('Cast session error:', err));
           }
         }catch(e){console.warn('cast err',e);}
       });
@@ -343,7 +356,6 @@ function renderImages(){
     if(modalFullEl&&!modalFullEl._boundClick){modalFullEl.addEventListener('click',(e)=>{if(e.target===modalFullEl)closeModal();});modalFullEl._boundClick=true;}
   }catch(e){console.warn(e);}
 })();
-
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
   const p = PAGES.envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
