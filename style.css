@@ -434,11 +434,11 @@ font-size: 32px;
   position: absolute;
   top: 6px;
   left: 6px;
-  background: rgba(0,0,0,0.7);
+  background: var(--color-bg);
   color: #fff;
-  font-size: var(--font-xs);
+  font-size: var(--font-xxs);
   font-weight: bold;
-  padding: 3px 6px;
+  padding: 3px 7px;
   border-radius: 6px;
   pointer-events: none; /* no bloquea clics */
   user-select: none;
