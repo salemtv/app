@@ -60,28 +60,5 @@
     </div>
   </footer>
 <script src="script.js"></script>
-<script>
-/* Bloquear/neutralizar window.open y window.showModalDialog (antiguo) */
-(function() {
-  const origOpen = window.open;
-  window.open = function(url, name, specs) {
-    console.warn('Bloqueado intento de abrir ventana:', url, name);
-    // devuelve un objeto "falso" que algunas bibliotecas esperan
-    return {
-      closed: true,
-      close() {},
-      focus() {},
-      location: { href: '' }
-    };
-    // Si quisieras permitir algunas URLs, puedes filtrarlas aquí.
-  };
-
-  if (window.showModalDialog) {
-    window.showModalDialog = function() {
-      console.warn('showModalDialog bloqueado');
-    };
-  }
-})();
-</script>
 </body>
 </html>
