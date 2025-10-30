@@ -95,26 +95,32 @@ function renderImages(){
   const input = document.getElementById('imgSearch');
   let noResultsMsg = null;
   input.addEventListener('input', (e) => {
-    const v = e.target.value.trim().toLowerCase();
-    let visible = 0;
-    grid.querySelectorAll('.card').forEach(card => {
-      const name = (card.querySelector('.iname')?.textContent || '').toLowerCase();
-      if (name.includes(v)) { card.style.display = ''; visible++; }
-      else card.style.display = 'none';
-    });
-    if (visible === 0) {
-      if (!noResultsMsg) {
-        noResultsMsg = document.createElement('p');
-        noResultsMsg.className = 'no-results';
-        noResultsMsg.style.marginTop = '8px';
-        noResultsMsg.style.color = 'var(--color-muted)';
-        noResultsMsg.textContent = 'No se encontró nada.';
-        container.appendChild(noResultsMsg);
-      }
-    } else if (noResultsMsg) {
-      noResultsMsg.remove(); noResultsMsg = null;
+  const v = e.target.value.trim().toLowerCase();
+  let visible = 0;
+  grid.querySelectorAll('.card').forEach(card => {
+    const name = (card.querySelector('.iname')?.textContent || '').toLowerCase();
+    const tag = (card.querySelector('.img-number')?.textContent || '').toLowerCase(); // 👈 buscar también por tag
+    if (name.includes(v) || tag.includes(v)) {
+      card.style.display = '';
+      visible++;
+    } else {
+      card.style.display = 'none';
     }
   });
+  if (visible === 0) {
+    if (!noResultsMsg) {
+      noResultsMsg = document.createElement('p');
+      noResultsMsg.className = 'no-results';
+      noResultsMsg.style.marginTop = '8px';
+      noResultsMsg.style.color = 'var(--color-muted)';
+      noResultsMsg.textContent = 'No se encontró nada.';
+      container.appendChild(noResultsMsg);
+    }
+  } else if (noResultsMsg) {
+    noResultsMsg.remove();
+    noResultsMsg = null;
+  }
+});
 }
 /* ---------------- Custom player robust v1.0 (iOS/Android focused) ---------------- */
 /* REPLACE previous openImagePlayer/closeModal code with this block */
