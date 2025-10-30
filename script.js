@@ -130,6 +130,7 @@ function renderImages(){
   const modalCloseEl = document.getElementById('modalClose');
 
   function isIOS(){ return /iPhone|iPad|iPod/.test(navigator.userAgent); }
+  function isAndroid(){ return /Android/i.test(navigator.userAgent); }
   function isStandaloneIOS(){ return (('standalone' in navigator && navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches) && isIOS(); }
   function formatTime(sec){ if(!isFinite(sec)||isNaN(sec))return'0:00';const h=Math.floor(sec/3600);const m=Math.floor((sec%3600)/60);const s=Math.floor(sec%60);return h>0?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`; }
   function supportsPiP(video){ try{ if('pictureInPictureEnabled'in document&&typeof video.requestPictureInPicture==='function')return true;
@@ -156,8 +157,15 @@ function renderImages(){
     const controls=document.createElement('div'); controls.className='cp-controls visible';
     const showPip=!isStandaloneIOS()&&supportsPiP(video);
 
-    const supportsAirPlay=!!window.WebKitPlaybackTargetAvailabilityEvent;
-    const supportsCast=!!(window.chrome&&chrome.cast);
+    // Detectar compatibilidad
+    const supportsAirPlay = typeof video.webkitShowPlaybackTargetPicker === 'function';
+    const supportsCast = !!(window.chrome && chrome.cast);
+
+    // Determinar ícono correcto
+    let transmitIcon = '';
+    if (supportsAirPlay && isIOS()) transmitIcon = 'airplay';
+    else if (supportsCast && isAndroid()) transmitIcon = 'cast';
+    else if (supportsCast) transmitIcon = 'cast';
 
     controls.innerHTML=`
       <div class="cp-center">
@@ -180,7 +188,7 @@ function renderImages(){
         <div class="cp-right">
           <button class="cp-btn cp-mute" title="Mute"><span class="material-symbols-outlined">volume_up</span></button>
           ${showPip?`<button class="cp-btn cp-pip" title="Picture in Picture"><span class="material-symbols-outlined">picture_in_picture_alt</span></button>`:''}
-          ${(supportsAirPlay||supportsCast)?`<button class="cp-btn cp-cast" title="Transmitir"><span class="material-symbols-outlined">cast</span></button>`:''}
+          ${transmitIcon?`<button class="cp-btn cp-cast" title="Transmitir"><span class="material-symbols-outlined">${transmitIcon}</span></button>`:''}
           <button class="cp-btn cp-full" title="Fullscreen"><span class="material-symbols-outlined">fullscreen</span></button>
         </div>
       </div>
@@ -235,9 +243,12 @@ function renderImages(){
     if(castBtn){
       castBtn.addEventListener('click',()=>{
         try{
-          if(supportsAirPlay&&typeof video.webkitShowPlaybackTargetPicker==='function'){video.webkitShowPlaybackTargetPicker();}
-          else if(supportsCast){alert('Pulsa el botón Cast del navegador para transmitir.');}
-          else{alert('Tu dispositivo no admite AirPlay ni Cast.');}
+          if(supportsAirPlay && typeof video.webkitShowPlaybackTargetPicker==='function'){
+            video.webkitShowPlaybackTargetPicker();
+          } else if(supportsCast && window.chrome && chrome.cast){
+            const ctx = cast.framework?.CastContext?.getInstance?.();
+            if (ctx) ctx.requestSession();
+          }
         }catch(e){console.warn('cast err',e);}
       });
     }
