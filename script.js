@@ -122,7 +122,7 @@ function renderImages(){
   }
 });
 }
-/* ---------------- Custom player robust v1.3 (iOS/Android native fullscreen + Cast + AirPlay + resume + gestures) ---------------- */
+/* ---------------- Custom player robust v1.3 (iOS/Android Cast nativo + AirPlay + fullscreen + resume + gestures) ---------------- */
 (function(){
   const modalFullEl = document.getElementById('modalFull');
   const modalMediaEl = document.getElementById('modalMedia');
@@ -136,19 +136,6 @@ function renderImages(){
   function supportsPiP(video){ try{ if('pictureInPictureEnabled'in document&&typeof video.requestPictureInPicture==='function')return true;
     if(typeof video.webkitSupportsPresentationMode==='function'&&typeof video.webkitSetPresentationMode==='function'){return !!video.webkitSupportsPresentationMode&&video.webkitSupportsPresentationMode('picture-in-picture');}}catch(e){} return false;}
   function cleanup(wrapper){ if(!wrapper)return; const v=wrapper.querySelector('video'); if(v){try{v.pause();}catch(e){} if(v._hls&&typeof v._hls.destroy==='function'){try{v._hls.destroy();}catch(e){}} try{v.src='';}catch(e){}} wrapper.remove(); }
-
-  // --- Inicializar Google Cast (si está disponible) ---
-  if (window.chrome && chrome.cast) {
-    window['__onGCastApiAvailable'] = function(isAvailable) {
-      if (isAvailable) {
-        const context = cast.framework.CastContext.getInstance();
-        context.setOptions({
-          receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-          autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-        });
-      }
-    };
-  }
 
   window.openImagePlayer=function(item){
     const src=item.video||item.srcVideo||item.iframe||item.player||''; if(!src)return;
@@ -170,15 +157,13 @@ function renderImages(){
     const controls=document.createElement('div'); controls.className='cp-controls visible';
     const showPip=!isStandaloneIOS()&&supportsPiP(video);
 
-    // Detectar compatibilidad
+    // --- Detectar compatibilidad de transmisión ---
     const supportsAirPlay = typeof video.webkitShowPlaybackTargetPicker === 'function';
-    const supportsCast = !!(window.chrome && chrome.cast);
+    const supportsCast = !!(window.chrome && (chrome.cast || (window.cast && window.cast.framework)));
 
-    // Determinar ícono correcto
     let transmitIcon = '';
     if (supportsAirPlay && isIOS()) transmitIcon = 'airplay';
-    else if (supportsCast && isAndroid()) transmitIcon = 'cast';
-    else if (supportsCast) transmitIcon = 'cast';
+    else if (supportsCast && !isIOS()) transmitIcon = 'cast';
 
     controls.innerHTML=`
       <div class="cp-center">
@@ -252,18 +237,30 @@ function renderImages(){
       }
     }catch(e){console.warn('pip err',e);}});
 
-    // --- AirPlay / Cast funcional ---
+    // --- AirPlay / Cast ---
     if(castBtn){
-      castBtn.addEventListener('click',()=>{
-        try{
-          if(supportsAirPlay && typeof video.webkitShowPlaybackTargetPicker==='function'){
-            video.webkitShowPlaybackTargetPicker();
-          } else if (supportsCast && window.chrome && chrome.cast) {
-            const ctx = cast.framework.CastContext.getInstance();
-            if (ctx) ctx.requestSession().catch(err => console.warn('Cast session error:', err));
-          }
-        }catch(e){console.warn('cast err',e);}
-      });
+      // Si es iOS y soporta AirPlay
+      if(supportsAirPlay && isIOS()){
+        castBtn.addEventListener('click',()=>video.webkitShowPlaybackTargetPicker());
+      } 
+      // Si es Chrome con soporte Cast
+      else if(supportsCast){
+        castBtn.addEventListener('click',()=>{
+          try{
+            if(window.cast && cast.framework){
+              const ctx = cast.framework.CastContext.getInstance();
+              ctx.requestSession().catch(()=>{});
+            } else {
+              console.warn('Cast framework no disponible');
+              castBtn.style.display='none';
+            }
+          }catch(e){console.warn('cast err',e);castBtn.style.display='none';}
+        });
+      } 
+      // Si no hay soporte, esconder botón
+      else {
+        castBtn.style.display='none';
+      }
     }
 
     // --- Fullscreen nativo ---
@@ -276,7 +273,7 @@ function renderImages(){
     });
     document.addEventListener('fullscreenchange',()=>{const isFs=!!document.fullscreenElement;fullBtn.firstElementChild.textContent=isFs?'fullscreen_exit':'fullscreen';});
 
-    // --- Auto-hide controls + botón X sincronizado ---
+    // --- Auto-hide controls ---
     let hideTimer=null;
     function showControlsTemporary(){
       controls.classList.add('visible');clearTimeout(hideTimer);
@@ -302,7 +299,7 @@ function renderImages(){
     video.addEventListener('timeupdate',()=>{if(!duringSeek)updateUI();});
     video.addEventListener('loadedmetadata',updateUI);
 
-    // --- Resume prompt ---
+    // --- Resume ---
     try{
       const saved=JSON.parse(localStorage.getItem(vidKey)||'{}');
       if(saved&&saved.t&&saved.t>3){
@@ -310,16 +307,13 @@ function renderImages(){
         resumeBox.className='cp-resume';
         resumeBox.innerHTML=`
           <div class="cp-resume-box">
-            <div class="cp-resume-text">¿Deseas retomar desde <strong class="cp-time">${formatTime(saved.t)}</strong>?</div>
+            <div class="cp-resume-text">¿Retomar desde <strong>${formatTime(saved.t)}</strong>?</div>
             <div class="cp-resume-actions">
               <button class="cp-btn cp-yes">Sí</button>
               <button class="cp-btn cp-no">No</button>
             </div>
           </div>`;
         wrap.appendChild(resumeBox);
-        const yes=resumeBox.querySelector('.cp-yes'),no=resumeBox.querySelector('.cp-no');
-        [yes,no].forEach(btn=>btn.addEventListener('touchstart',()=>btn.classList.add('active')));
-        [yes,no].forEach(btn=>btn.addEventListener('touchend',()=>btn.classList.remove('active')));
         resumeBox.querySelector('.cp-yes').onclick=()=>{video.currentTime=saved.t;resumeBox.remove();video.play().catch(()=>{});};
         resumeBox.querySelector('.cp-no').onclick=()=>{localStorage.removeItem(vidKey);resumeBox.remove();video.play().catch(()=>{});};
       }
@@ -336,7 +330,7 @@ function renderImages(){
       },{passive:true});
     }
 
-    // --- Open modal ---
+    // --- Abrir modal ---
     modalFullEl.classList.add('active');
     modalFullEl.setAttribute('aria-hidden','false');
     document.body.classList.add('no-scroll');
