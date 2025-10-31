@@ -167,7 +167,7 @@ function updateAllVideoStatuses(){
     const url = el.dataset.url;
     if (!url) return;
     el.classList.remove('active', 'inactive');
-    el.classList.add('checking'); // animación amarilla
+    el.classList.add('checking');
 
     checkVideoStatus(url).then(isActive => {
       el.classList.remove('checking', 'active', 'inactive');
@@ -176,10 +176,26 @@ function updateAllVideoStatuses(){
   });
 }
 
-function checkVideoStatus(url) {
-  return fetch(url, { method: 'HEAD', mode: 'no-cors' })
-    .then(res => res.ok || res.type === 'opaque')
-    .catch(() => false);
+async function checkVideoStatus(url) {
+  try {
+    // Si es un .m3u8 o .mpd, no siempre responden a HEAD, probamos GET con rango
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-1024' },
+      mode: 'cors' // intenta obtener respuesta real
+    });
+
+    // Si devuelve 200 o 206, está disponible
+    if (res.status === 200 || res.status === 206) return true;
+
+    // Si es tipo "opaque", asumimos que no podemos confirmar (mejor falso)
+    if (res.type === 'opaque') return false;
+
+    return false;
+  } catch (err) {
+    // Error de red o CORS -> consideramos caído
+    return false;
+  }
 }
 
 /* ---------------- CSS ---------------- */
