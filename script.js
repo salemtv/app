@@ -235,7 +235,8 @@ style.textContent = `
 }
 `;
 document.head.appendChild(style);
-/* ---------------- Custom player robust v1.3 (iOS/Android Cast nativo + AirPlay + fullscreen + resume + gestures) ---------------- */
+
+/* ---------------- Custom player robust v1.4 (iOS AirPlay + fullscreen + resume + gestures + PiP optimizado) ---------------- */
 (function(){
   const modalFullEl = document.getElementById('modalFull');
   const modalMediaEl = document.getElementById('modalMedia');
@@ -275,8 +276,10 @@ document.head.appendChild(style);
     const supportsCast = !!(window.chrome && (chrome.cast || (window.cast && window.cast.framework)));
 
     let transmitIcon = '';
+    // 🔹 Solo mostrar AirPlay en iOS. Cast está temporalmente deshabilitado.
     if (supportsAirPlay && isIOS()) transmitIcon = 'airplay';
-    else if (supportsCast && !isIOS()) transmitIcon = 'cast';
+    // Para reactivar Cast en Android o navegadores, descomenta la línea siguiente:
+    // else if (supportsCast && !isIOS()) transmitIcon = 'cast';
 
     controls.innerHTML=`
       <div class="cp-center">
@@ -350,30 +353,9 @@ document.head.appendChild(style);
       }
     }catch(e){console.warn('pip err',e);}});
 
-    // --- AirPlay / Cast ---
-    if(castBtn){
-      // Si es iOS y soporta AirPlay
-      if(supportsAirPlay && isIOS()){
-        castBtn.addEventListener('click',()=>video.webkitShowPlaybackTargetPicker());
-      } 
-      // Si es Chrome con soporte Cast
-      else if(supportsCast){
-        castBtn.addEventListener('click',()=>{
-          try{
-            if(window.cast && cast.framework){
-              const ctx = cast.framework.CastContext.getInstance();
-              ctx.requestSession().catch(()=>{});
-            } else {
-              console.warn('Cast framework no disponible');
-              castBtn.style.display='none';
-            }
-          }catch(e){console.warn('cast err',e);castBtn.style.display='none';}
-        });
-      } 
-      // Si no hay soporte, esconder botón
-      else {
-        castBtn.style.display='none';
-      }
+    // --- AirPlay ---
+    if(castBtn && isIOS()){
+      castBtn.addEventListener('click',()=>video.webkitShowPlaybackTargetPicker());
     }
 
     // --- Fullscreen nativo ---
@@ -386,7 +368,7 @@ document.head.appendChild(style);
     });
     document.addEventListener('fullscreenchange',()=>{const isFs=!!document.fullscreenElement;fullBtn.firstElementChild.textContent=isFs?'fullscreen_exit':'fullscreen';});
 
-    // --- Auto-hide controls ---
+    // --- Auto-hide controls + close ---
     let hideTimer=null;
     function showControlsTemporary(){
       controls.classList.add('visible');clearTimeout(hideTimer);
@@ -412,10 +394,10 @@ document.head.appendChild(style);
     video.addEventListener('timeupdate',()=>{if(!duringSeek)updateUI();});
     video.addEventListener('loadedmetadata',updateUI);
 
-    // --- Resume ---
+    // --- Resume localStorage optimizado ---
     try{
       const saved=JSON.parse(localStorage.getItem(vidKey)||'{}');
-      if(saved&&saved.t&&saved.t>3){
+      if(saved && saved.t && saved.t>3){
         const resumeBox=document.createElement('div');
         resumeBox.className='cp-resume';
         resumeBox.innerHTML=`
@@ -430,7 +412,17 @@ document.head.appendChild(style);
         resumeBox.querySelector('.cp-yes').onclick=()=>{video.currentTime=saved.t;resumeBox.remove();video.play().catch(()=>{});};
         resumeBox.querySelector('.cp-no').onclick=()=>{localStorage.removeItem(vidKey);resumeBox.remove();video.play().catch(()=>{});};
       }
-    }catch(e){}
+      // Guardar progreso cada 3 segundos
+      let lastSave=0;
+      video.addEventListener('timeupdate',()=>{
+        const now=Date.now();
+        if(now-lastSave>3000 && video.currentTime>3){
+          lastSave=now;
+          localStorage.setItem(vidKey,JSON.stringify({t:video.currentTime}));
+        }
+      });
+      video.addEventListener('ended',()=>localStorage.removeItem(vidKey));
+    }catch(e){console.warn('resume err',e);}
 
     // --- Gestos táctiles ---
     if('ontouchstart'in window){
@@ -463,6 +455,7 @@ document.head.appendChild(style);
     if(modalFullEl&&!modalFullEl._boundClick){modalFullEl.addEventListener('click',(e)=>{if(e.target===modalFullEl)closeModal();});modalFullEl._boundClick=true;}
   }catch(e){console.warn(e);}
 })();
+
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
   const p = PAGES.envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
