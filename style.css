@@ -451,8 +451,11 @@ font-size: 32px;
 
 .card.featured {
   border: 0;
-  background: khaki;
+  background: var(--color-secondary);
 }
+.card.featured:hover {
+    background: salmon;
+    }
 
 .card, .card.featured {
   transform: scale(1);
