@@ -65,14 +65,14 @@ function renderImages(){
   
   const searchWrap = document.createElement('div');
   searchWrap.style.marginBottom = '12px';
-  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Buscar pelicula..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
+  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Search movie..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
   container.appendChild(searchWrap);
 
   // --- Sección destacadas ---
   const featured = (p.items || []).filter(i => i.featured);
   if (featured.length > 0) {
     const featTitle = document.createElement('h4');
-    featTitle.textContent = 'Destacadas';
+    featTitle.textContent = 'Featured';
     featTitle.style.margin = '1rem 0rem';
     container.appendChild(featTitle);
 
@@ -147,7 +147,7 @@ function renderImages(){
         noResultsMsg.className = 'no-results';
         noResultsMsg.style.marginTop = '8px';
         noResultsMsg.style.color = 'var(--color-muted)';
-        noResultsMsg.textContent = 'No se encontró nada.';
+        noResultsMsg.textContent = 'No title found.';
         container.appendChild(noResultsMsg);
       }
     } else if (noResultsMsg) {
@@ -229,9 +229,9 @@ style.textContent = `
   100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
 }
 .featured-grid {
-  border-bottom:1px solid var(--color-border, #333);
-  padding-bottom:10px;
-  margin-bottom:10px;
+  border-bottom:1px solid var(--color-secondary);
+  padding-bottom:1rem;
+  margin-bottom:1rem;
 }
 `;
 document.head.appendChild(style);
@@ -652,7 +652,7 @@ function renderEnVi2(){
   const loader = document.getElementById('loader2');
   const badge = document.getElementById('liveBadge2');
   const canalSaved = localStorage.getItem('canalSeleccionado2') || p.defaultStream || 'history';
-  iframe.src = `https://embed.saohgdasregions.fun/embed/${canalSaved}.html`;
+  iframe.src = `xhttps://embed.saohgdasregions.fun/embed/${canalSaved}.html`;
   iframe.onload = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.add('visible'); }
 
   document.getElementById('reloadBtn2').addEventListener('click', () => {
@@ -692,7 +692,7 @@ function initCustomSelector2() {
       localStorage.setItem('canalSeleccionado2', value);
       if (loader) loader.style.display = 'flex';
       if (badge) badge.classList.remove('visible');
-      iframe.src = `https://embed.saohgdasregions.fun/embed/${value}.html`;
+      iframe.src = `xhttps://embed.saohgdasregions.fun/embed/${value}.html`;
     });
   });
 
