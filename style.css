@@ -465,17 +465,21 @@ font-size: 32px;
 /* --- Destacadas --- */
 .featured-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
 }
 
 .card.featured {
-  border: 2px solid gold;
+  border: 0;
+  background: gold!important;
+}
+
+.card, .card.featured {
   transform: scale(1.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card.featured:hover {
+.card:hover, .card.featured:hover {
   transform: scale(1.08);
   box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
 }
