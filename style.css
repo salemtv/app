@@ -455,11 +455,11 @@ font-size: 32px;
 }
 
 .card, .card.featured {
-  transform: scale(1.05);
+  transform: scale(1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover, .card.featured:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  transform: scale(1.05);
+  /**box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);**/
 }
