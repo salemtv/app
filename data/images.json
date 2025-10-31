@@ -6,8 +6,7 @@
       "title": "Transformers 5: El Último Caballero",
       "tag": "2017",
       "image": "https://image.tmdb.org/t/p/original/yTSaTtpWsZzYGdIp1RjxWX1lC7C.jpg",
-      "video": "https://hfs309.serversicuro.cc/hls/,dnzpbr5l37g4a3gyvd3x5lj3svsus6sxggylncczarkyyyy5zbe2iiyjbmoa,.urlset/master.m3u8",
-      "featured": true
+      "video": "https://hfs309.serversicuro.cc/hls/,dnzpbr5l37g4a3gyvd3x5lj3svsus6sxggylncczarkyyyy5zbe2iiyjbmoa,.urlset/master.m3u8"
     },
     {
       "id": "Una Pareja Explosiva 3",
@@ -112,7 +111,8 @@
       "title": "El Conjuro 4",
       "tag": "2025",
       "image": "https://image.tmdb.org/t/p/original/dyW5mX4wwDoZWgTYObx6pg9V0i9.jpg",
-      "video": "https://cdn.flick.vip/1038392/index.m3u8?v=3290578986"
+      "video": "https://cdn.flick.vip/1038392/index.m3u8?v=3290578986",
+      "featured": true
     },
     {
       "id": "El Conjuro 3",
