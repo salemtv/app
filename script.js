@@ -57,23 +57,19 @@ function renderPage(tabName){
   else renderEnVi(); // envi original
 }
 
-/* ---------------- Images (v2 con estado + destacadas) ---------------- */
-async function checkVideoStatus(url) {
-  try {
-    const res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-    // Algunos servidores bloquean CORS, pero si responde, consideramos activo
-    return res.ok || res.type === 'opaque';
-  } catch (err) {
-    return false;
-  }
+/* ---------------- Images (v2.1 sin async raíz, compatible con JSON) ---------------- */
+function checkVideoStatus(url) {
+  return fetch(url, { method: 'HEAD', mode: 'no-cors' })
+    .then(res => res.ok || res.type === 'opaque')
+    .catch(() => false);
 }
 
-async function renderImages() {
+function renderImages() {
   const p = PAGES.images || { title: 'Imágenes', items: [] };
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
 
-  /* --- Buscador --- */
+  // --- Buscador ---
   const searchWrap = document.createElement('div');
   searchWrap.style.marginBottom = '12px';
   searchWrap.innerHTML = `
@@ -83,14 +79,15 @@ async function renderImages() {
     font-size:var(--font)">`;
   container.appendChild(searchWrap);
 
-  /* --- Separar destacadas --- */
+  // --- Separar destacadas ---
   const featured = (p.items || []).filter(i => i.featured);
   const normal = (p.items || []).filter(i => !i.featured);
 
-  /* --- Crear grid --- */
+  // --- Función para crear grillas ---
   const createGrid = (items, isFeatured = false) => {
     const grid = document.createElement('div');
     grid.className = isFeatured ? 'grid featured-grid' : 'grid';
+
     items.forEach(item => {
       const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
       const name = item.id || item.name || item.title || ('img-' + Math.random().toString(36).slice(2, 8));
@@ -113,10 +110,13 @@ async function renderImages() {
         <div class="iname">${escapeHtml(name)}</div>
       `;
 
+      // abrir el video al hacer clic
       c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
+
+      // añadir al grid
       grid.appendChild(c);
 
-      // --- Verificar estado del video ---
+      // verificar estado del video (asincronamente sin bloquear)
       if (videoUrl && tag) {
         const circle = c.querySelector('.status-circle');
         checkVideoStatus(videoUrl).then(isActive => {
@@ -127,7 +127,7 @@ async function renderImages() {
     return grid;
   };
 
-  /* --- Destacadas --- */
+  // --- Destacadas ---
   if (featured.length > 0) {
     const featTitle = document.createElement('h4');
     featTitle.textContent = '🎬 Destacadas';
@@ -136,7 +136,7 @@ async function renderImages() {
     container.appendChild(createGrid(featured, true));
   }
 
-  /* --- Normales --- */
+  // --- Normales ---
   if (normal.length > 0) {
     const normTitle = document.createElement('h4');
     normTitle.textContent = '🎞️ Todas las películas';
@@ -147,7 +147,7 @@ async function renderImages() {
 
   main.appendChild(container);
 
-  /* --- Búsqueda --- */
+  // --- Búsqueda ---
   const input = document.getElementById('imgSearch');
   let noResultsMsg = null;
   input.addEventListener('input', (e) => {
