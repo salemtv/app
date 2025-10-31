@@ -430,33 +430,13 @@ font-size: 32px;
   border-radius: 8px;
 }
 
-/* --- Estado activo/inactivo --- */
-.status-circle {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  background-color: gray;
-  margin-right: 4px;
-  vertical-align: middle;
-  transition: background-color 0.3s ease;
-}
-
-.status-circle.active {
-  background-color: #00d47f; /* verde activo */
-}
-
-.status-circle.inactive {
-  background-color: #888; /* gris inactivo */
-}
-
 /* --- Estilo de tag --- */
 .img-number {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 0.8rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   padding: 2px 6px;
   border-radius: 6px;
   color: #fff;
