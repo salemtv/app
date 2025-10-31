@@ -57,105 +57,83 @@ function renderPage(tabName){
   else renderEnVi(); // envi original
 }
 
-/* ---------------- Images (v2.1 sin async raíz, compatible con JSON) ---------------- */
-function checkVideoStatus(url) {
-  return fetch(url, { method: 'HEAD', mode: 'no-cors' })
-    .then(res => res.ok || res.type === 'opaque')
-    .catch(() => false);
-}
-
-function renderImages() {
-  const p = PAGES.images || { title: 'Imágenes', items: [] };
+/* ---------------- Images ---------------- */
+function renderImages(){
+  const p = PAGES.images || {title:'Imágenes', items:[]};
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
-
-  // --- Buscador ---
+  
   const searchWrap = document.createElement('div');
   searchWrap.style.marginBottom = '12px';
-  searchWrap.innerHTML = `
-    <input id="imgSearch" placeholder="Buscar pelicula..." 
-    style="width:100%;padding:10px;border-radius:8px;border:none;
-    background:var(--color-secondary);color: var(--color-text);
-    font-size:var(--font)">`;
+  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Buscar pelicula..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
   container.appendChild(searchWrap);
 
-  // --- Separar destacadas ---
+  // --- Sección destacadas ---
   const featured = (p.items || []).filter(i => i.featured);
-  const normal = (p.items || []).filter(i => !i.featured);
-
-  // --- Función para crear grillas ---
-  const createGrid = (items, isFeatured = false) => {
-    const grid = document.createElement('div');
-    grid.className = isFeatured ? 'grid featured-grid' : 'grid';
-
-    items.forEach(item => {
-      const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
-      const name = item.id || item.name || item.title || ('img-' + Math.random().toString(36).slice(2, 8));
-      const tag = item.tag || '';
-      const videoUrl = item.video || item.srcVideo || '';
-
-      const c = document.createElement('div');
-      c.className = isFeatured ? 'card featured' : 'card';
-      c.dataset.img = name;
-
-      c.innerHTML = `
-        <div class="img-wrap">
-          <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
-          ${tag ? `
-            <div class="img-number">
-              <span class="status-circle"></span>
-              ${escapeHtml(tag)}
-            </div>` : ''}
-        </div>
-        <div class="iname">${escapeHtml(name)}</div>
-      `;
-
-      // abrir el video al hacer clic
-      c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
-
-      // añadir al grid
-      grid.appendChild(c);
-
-      // verificar estado del video (asincronamente sin bloquear)
-      if (videoUrl && tag) {
-        const circle = c.querySelector('.status-circle');
-        checkVideoStatus(videoUrl).then(isActive => {
-          circle.classList.add(isActive ? 'active' : 'inactive');
-        });
-      }
-    });
-    return grid;
-  };
-
-  // --- Destacadas ---
   if (featured.length > 0) {
     const featTitle = document.createElement('h4');
     featTitle.textContent = '🎬 Destacadas';
     featTitle.style.margin = '10px 0 6px';
     container.appendChild(featTitle);
-    container.appendChild(createGrid(featured, true));
+
+    const featGrid = document.createElement('div');
+    featGrid.className = 'grid featured-grid';
+    container.appendChild(featGrid);
+
+    featured.forEach(item => {
+      const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
+      const name = item.id || item.name || item.title || ('img-'+Math.random().toString(36).slice(2,8));
+      const tag = item.tag || '';
+      const c = document.createElement('div');
+      c.className = 'card featured';
+      c.dataset.img = name;
+      c.innerHTML = `
+        <div class="img-wrap">
+          <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
+          ${tag ? `<div class="img-number"><span class="status-circle" data-url="${item.video || ''}"></span> ${escapeHtml(tag)}</div>` : ''}
+        </div>
+        <div class="iname">${escapeHtml(name)}</div>
+      `;
+      c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
+      featGrid.appendChild(c);
+    });
   }
 
-  // --- Normales ---
-  if (normal.length > 0) {
-    const normTitle = document.createElement('h4');
-    normTitle.textContent = '🎞️ Todas las películas';
-    normTitle.style.margin = '10px 0 6px';
-    container.appendChild(normTitle);
-    container.appendChild(createGrid(normal));
-  }
+  // --- Resto de películas normales ---
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  (p.items || []).filter(i => !i.featured).forEach(item => {
+    const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
+    const name = item.id || item.name || item.title || ('img-'+Math.random().toString(36).slice(2,8));
+    const tag = item.tag || ''; // etiqueta visible dentro de la imagen
 
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.dataset.img = name;
+
+    c.innerHTML = `
+      <div class="img-wrap">
+        <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
+        ${tag ? `<div class="img-number"><span class="status-circle" data-url="${item.video || ''}"></span> ${escapeHtml(tag)}</div>` : ''}
+      </div>
+      <div class="iname">${escapeHtml(name)}</div>
+    `;
+
+    c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
+    grid.appendChild(c);
+  });
+  container.appendChild(grid);
   main.appendChild(container);
 
-  // --- Búsqueda ---
+  // --- Buscador ---
   const input = document.getElementById('imgSearch');
   let noResultsMsg = null;
   input.addEventListener('input', (e) => {
     const v = e.target.value.trim().toLowerCase();
     let visible = 0;
-    container.querySelectorAll('.card').forEach(card => {
+    grid.querySelectorAll('.card').forEach(card => {
       const name = (card.querySelector('.iname')?.textContent || '').toLowerCase();
-      const tag = (card.querySelector('.img-number')?.textContent || '').toLowerCase();
+      const tag = (card.querySelector('.img-number')?.textContent || '').toLowerCase(); // 👈 buscar también por tag
       if (name.includes(v) || tag.includes(v)) {
         card.style.display = '';
         visible++;
@@ -177,7 +155,70 @@ function renderImages() {
       noResultsMsg = null;
     }
   });
+
+  // --- Verificar estado inicial y actualizar automáticamente ---
+  updateAllVideoStatuses();
+  setInterval(updateAllVideoStatuses, 60000); // cada 60 segundos
 }
+
+/* ---------------- Verificar estado de videos ---------------- */
+function updateAllVideoStatuses(){
+  document.querySelectorAll('.status-circle[data-url]').forEach(el => {
+    const url = el.dataset.url;
+    if (!url) return;
+    el.classList.remove('active', 'inactive');
+    el.classList.add('checking'); // animación amarilla
+
+    checkVideoStatus(url).then(isActive => {
+      el.classList.remove('checking', 'active', 'inactive');
+      el.classList.add(isActive ? 'active' : 'inactive');
+    });
+  });
+}
+
+function checkVideoStatus(url) {
+  return fetch(url, { method: 'HEAD', mode: 'no-cors' })
+    .then(res => res.ok || res.type === 'opaque')
+    .catch(() => false);
+}
+
+/* ---------------- CSS ---------------- */
+const style = document.createElement('style');
+style.textContent = `
+.status-circle {
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-right:6px;
+  vertical-align:middle;
+  background:gray;
+  transition:background 0.3s, box-shadow 0.3s;
+}
+.status-circle.checking {
+  background: gold;
+  animation: pulse 1s infinite;
+}
+.status-circle.active {
+  background: var(--color-success, #00c853);
+  box-shadow: 0 0 4px var(--color-success, #00c853);
+}
+.status-circle.inactive {
+  background: var(--color-muted, #666);
+  opacity: 0.7;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,215,0,0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(255,215,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,215,0,0); }
+}
+.featured-grid {
+  border-bottom:1px solid var(--color-border, #333);
+  padding-bottom:10px;
+  margin-bottom:10px;
+}
+`;
+document.head.appendChild(style);
 /* ---------------- Custom player robust v1.3 (iOS/Android Cast nativo + AirPlay + fullscreen + resume + gestures) ---------------- */
 (function(){
   const modalFullEl = document.getElementById('modalFull');
