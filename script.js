@@ -57,70 +57,126 @@ function renderPage(tabName){
   else renderEnVi(); // envi original
 }
 
-/* ---------------- Images ---------------- */
-function renderImages(){
-  const p = PAGES.images || {title:'Imágenes', items:[]};
+/* ---------------- Images (v2 con estado + destacadas) ---------------- */
+async function checkVideoStatus(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+    // Algunos servidores bloquean CORS, pero si responde, consideramos activo
+    return res.ok || res.type === 'opaque';
+  } catch (err) {
+    return false;
+  }
+}
+
+async function renderImages() {
+  const p = PAGES.images || { title: 'Imágenes', items: [] };
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
+
+  /* --- Buscador --- */
   const searchWrap = document.createElement('div');
   searchWrap.style.marginBottom = '12px';
-  searchWrap.innerHTML = `<input id="imgSearch" placeholder="Buscar pelicula..." style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-secondary);color: var(--color-text);font-size:var(--font)">`;
+  searchWrap.innerHTML = `
+    <input id="imgSearch" placeholder="Buscar pelicula..." 
+    style="width:100%;padding:10px;border-radius:8px;border:none;
+    background:var(--color-secondary);color: var(--color-text);
+    font-size:var(--font)">`;
   container.appendChild(searchWrap);
 
-  const grid = document.createElement('div');
-  grid.className = 'grid';
-  (p.items || []).forEach(item => {
-  const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
-  const name = item.id || item.name || item.title || ('img-'+Math.random().toString(36).slice(2,8));
-  const tag = item.tag || ''; // etiqueta visible dentro de la imagen
+  /* --- Separar destacadas --- */
+  const featured = (p.items || []).filter(i => i.featured);
+  const normal = (p.items || []).filter(i => !i.featured);
 
-  const c = document.createElement('div');
-  c.className = 'card';
-  c.dataset.img = name;
+  /* --- Crear grid --- */
+  const createGrid = (items, isFeatured = false) => {
+    const grid = document.createElement('div');
+    grid.className = isFeatured ? 'grid featured-grid' : 'grid';
+    items.forEach(item => {
+      const imgUrl = item.src || item.url || item.image || item.srcUrl || '';
+      const name = item.id || item.name || item.title || ('img-' + Math.random().toString(36).slice(2, 8));
+      const tag = item.tag || '';
+      const videoUrl = item.video || item.srcVideo || '';
 
-  c.innerHTML = `
-    <div class="img-wrap">
-      <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
-      ${tag ? `<div class="img-number">${escapeHtml(tag)}</div>` : ''}
-    </div>
-    <div class="iname">${escapeHtml(name)}</div>
-  `;
+      const c = document.createElement('div');
+      c.className = isFeatured ? 'card featured' : 'card';
+      c.dataset.img = name;
 
-  c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
-  grid.appendChild(c);
-});
-  container.appendChild(grid);
+      c.innerHTML = `
+        <div class="img-wrap">
+          <img loading="lazy" src="${imgUrl}" alt="${escapeHtml(name)}" />
+          ${tag ? `
+            <div class="img-number">
+              <span class="status-circle"></span>
+              ${escapeHtml(tag)}
+            </div>` : ''}
+        </div>
+        <div class="iname">${escapeHtml(name)}</div>
+      `;
+
+      c.querySelector('img').addEventListener('click', () => openImagePlayer(item));
+      grid.appendChild(c);
+
+      // --- Verificar estado del video ---
+      if (videoUrl && tag) {
+        const circle = c.querySelector('.status-circle');
+        checkVideoStatus(videoUrl).then(isActive => {
+          circle.classList.add(isActive ? 'active' : 'inactive');
+        });
+      }
+    });
+    return grid;
+  };
+
+  /* --- Destacadas --- */
+  if (featured.length > 0) {
+    const featTitle = document.createElement('h4');
+    featTitle.textContent = '🎬 Destacadas';
+    featTitle.style.margin = '10px 0 6px';
+    container.appendChild(featTitle);
+    container.appendChild(createGrid(featured, true));
+  }
+
+  /* --- Normales --- */
+  if (normal.length > 0) {
+    const normTitle = document.createElement('h4');
+    normTitle.textContent = '🎞️ Todas las películas';
+    normTitle.style.margin = '10px 0 6px';
+    container.appendChild(normTitle);
+    container.appendChild(createGrid(normal));
+  }
+
   main.appendChild(container);
 
+  /* --- Búsqueda --- */
   const input = document.getElementById('imgSearch');
   let noResultsMsg = null;
   input.addEventListener('input', (e) => {
-  const v = e.target.value.trim().toLowerCase();
-  let visible = 0;
-  grid.querySelectorAll('.card').forEach(card => {
-    const name = (card.querySelector('.iname')?.textContent || '').toLowerCase();
-    const tag = (card.querySelector('.img-number')?.textContent || '').toLowerCase(); // 👈 buscar también por tag
-    if (name.includes(v) || tag.includes(v)) {
-      card.style.display = '';
-      visible++;
-    } else {
-      card.style.display = 'none';
+    const v = e.target.value.trim().toLowerCase();
+    let visible = 0;
+    container.querySelectorAll('.card').forEach(card => {
+      const name = (card.querySelector('.iname')?.textContent || '').toLowerCase();
+      const tag = (card.querySelector('.img-number')?.textContent || '').toLowerCase();
+      if (name.includes(v) || tag.includes(v)) {
+        card.style.display = '';
+        visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+    if (visible === 0) {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('p');
+        noResultsMsg.className = 'no-results';
+        noResultsMsg.style.marginTop = '8px';
+        noResultsMsg.style.color = 'var(--color-muted)';
+        noResultsMsg.textContent = 'No se encontró nada.';
+        container.appendChild(noResultsMsg);
+      }
+    } else if (noResultsMsg) {
+      noResultsMsg.remove();
+      noResultsMsg = null;
     }
   });
-  if (visible === 0) {
-    if (!noResultsMsg) {
-      noResultsMsg = document.createElement('p');
-      noResultsMsg.className = 'no-results';
-      noResultsMsg.style.marginTop = '8px';
-      noResultsMsg.style.color = 'var(--color-muted)';
-      noResultsMsg.textContent = 'No se encontró nada.';
-      container.appendChild(noResultsMsg);
-    }
-  } else if (noResultsMsg) {
-    noResultsMsg.remove();
-    noResultsMsg = null;
-  }
-});
 }
 /* ---------------- Custom player robust v1.3 (iOS/Android Cast nativo + AirPlay + fullscreen + resume + gestures) ---------------- */
 (function(){
