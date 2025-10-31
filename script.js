@@ -72,8 +72,8 @@ function renderImages(){
   const featured = (p.items || []).filter(i => i.featured);
   if (featured.length > 0) {
     const featTitle = document.createElement('h4');
-    featTitle.textContent = '🎬 Destacadas';
-    featTitle.style.margin = '10px 0 6px';
+    featTitle.textContent = 'Destacadas';
+    featTitle.style.margin = '1rem 0rem';
     container.appendChild(featTitle);
 
     const featGrid = document.createElement('div');
