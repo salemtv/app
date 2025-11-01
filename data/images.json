@@ -177,6 +177,20 @@
       "tag": "2018",
       "image": "https://image.tmdb.org/t/p/original/xOlrOeL8uaujmzm3Rkw3qCd8Puk.jpg",
       "video": "https://cdn.flick.vip/299536/index.m3u8?v=1479569937"
+    },
+    {
+      "id": ["Avengers 2: Era de Ultrón", "Vengadores 2: Era de Ultron"],
+      "title": "Avengers 2: Era de Ultrón",
+      "tag": "2015",
+      "image": "https://image.tmdb.org/t/p/original/ugX4WZJO3jEvTOerctAWJLinujo.jpg",
+      "video": "https://cdn.flick.vip/99861/index.m3u8?v=1607529179"
+    },
+    {
+      "id": ["Avengers: Los Vengadores", "Vengadores: Los Vengadores"],
+      "title": "Avengers: Los Vengadores",
+      "tag": "2012",
+      "image": "https://image.tmdb.org/t/p/original/ugX4WZJO3jEvTOerctAWJLinujo.jpg",
+      "video": "https://cdn.flick.vip/24428/index.m3u8?v=2384847048"
     }
   ]
 }
