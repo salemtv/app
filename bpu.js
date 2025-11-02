@@ -1,321 +1,131 @@
-// professional-popup-blocker.js
+// simple-adblocker.js
 (function() {
     'use strict';
-
-    class ProfessionalPopupBlocker {
-        constructor() {
-            this.trustedVideoDomains = new Set([
-                'youtube.com', 'youtu.be', 'youtube-nocookie.com',
-                'vimeo.com', 'player.vimeo.com', 
-                'dailymotion.com', 'dmcdn.net',
-                'twitch.tv', 'ttvnw.net',
-                'spotify.com', 'scdn.co',
-                'wistia.com', 'fast.wistia.net',
-                'netflix.com', 'nflxso.net',
-                'soundcloud.com',
-                'facebook.com/plugins/video.php',
-                'streamable.com'
-            ]);
-
-            this.adPatterns = [
-                /(?:^|\.)doubleclick\.net$/i,
-                /(?:^|\.)googleadsyndication\.com$/i,
-                /(?:^|\.)googlesyndication\.com$/i,
-                /(?:^|\.)adsystem\.com$/i,
-                /(?:^|\.)adservice\.google\./i,
-                /\/ads?\//i,
-                /\/banners?\//i,
-                /\/popups?\//i,
-                /_ad\./i,
-                /\.ads?\./i,
-                /tracking/i,
-                /analytics/i,
-                /beacon/i,
-                /affiliate/i,
-                /promo/i,
-                /marketing/i
-            ];
-
-            this.init();
-        }
-
-        init() {
-            this.overrideWindowOpen();
-            this.overrideEventTarget();
-            this.setupMutationObserver();
-            this.setupMessageInterceptor();
-            this.setupBlurHandler();
-            this.sandboxAllIframes();
-            
-            console.log('🛡️ Professional Popup Blocker activated');
-        }
-
-        overrideWindowOpen() {
-            const originalOpen = window.open;
-            
-            Object.defineProperty(window, 'open', {
-                value: (url, name, features) => {
-                    if (this.shouldBlockPopup(url, 'window.open')) {
-                        this.logBlockedPopup(url, 'window.open');
-                        return null;
-                    }
-                    return originalOpen.call(window, url, name, features);
-                },
-                writable: false,
-                configurable: false
-            });
-        }
-
-        overrideEventTarget() {
-            const originalAddEventListener = EventTarget.prototype.addEventListener;
-            
-            EventTarget.prototype.addEventListener = function(type, listener, options) {
-                // Block beforeunload events that might trigger popups
-                if (type === 'beforeunload' && this instanceof HTMLIFrameElement) {
-                    this.logBlockedEvent('beforeunload', this.src);
-                    return;
-                }
-                
-                // Intercept click events on iframes
-                if (type === 'click' && this instanceof HTMLIFrameElement) {
-                    const wrappedListener = (event) => {
-                        this.handleIframeClick(event, this);
-                        listener.call(this, event);
-                    };
-                    return originalAddEventListener.call(this, type, wrappedListener, options);
-                }
-                
-                return originalAddEventListener.call(this, type, listener, options);
-            }.bind(this);
-        }
-
-        handleIframeClick(event, iframe) {
-            // Set up temporary popup blocking for iframe clicks
-            this.temporaryPopupBlock(1000);
-            this.logIframeInteraction(iframe);
-        }
-
-        temporaryPopupBlock(duration) {
-            const originalOpen = window.open;
-            let blocked = false;
-            
-            window.open = (url, name, features) => {
-                blocked = true;
-                this.logBlockedPopup(url, 'iframe-click');
-                return null;
-            };
-            
-            setTimeout(() => {
-                window.open = originalOpen;
-                if (blocked) {
-                    this.showBlockNotification();
-                }
-            }, duration);
-        }
-
-        sandboxAllIframes() {
-            const iframes = document.querySelectorAll('iframe');
-            iframes.forEach(iframe => this.applySandboxPolicy(iframe));
-        }
-
-        applySandboxPolicy(iframe) {
-            if (this.isTrustedVideo(iframe)) {
-                // Minimal restrictions for trusted video platforms
-                iframe.sandbox = 'allow-scripts allow-same-origin allow-popups allow-presentation allow-forms allow-pointer-lock allow-downloads allow-fullscreen';
-            } else {
-                // Strict restrictions for unknown iframes
-                iframe.sandbox = 'allow-scripts allow-same-origin';
-            }
-            
-            iframe.referrerPolicy = 'no-referrer';
-            this.secureIframeContent(iframe);
-        }
-
-        secureIframeContent(iframe) {
-            iframe.addEventListener('load', () => {
-                try {
-                    this.injectIframeProtection(iframe);
-                } catch (e) {
-                    // CORS policy restriction
-                    this.monitorIframeBehavior(iframe);
-                }
-            });
-        }
-
-        injectIframeProtection(iframe) {
-            const iframeWindow = iframe.contentWindow;
-            const iframeDocument = iframe.contentDocument;
-            
-            if (!iframeWindow || !iframeDocument) return;
-
-            // Override iframe's window.open
-            Object.defineProperty(iframeWindow, 'open', {
-                value: (url, name, features) => {
-                    this.logBlockedPopup(url, 'iframe-window.open');
-                    return null;
-                },
-                writable: false,
-                configurable: false
-            });
-
-            // Block alert dialogs from iframe
-            ['alert', 'confirm', 'prompt'].forEach(method => {
-                iframeWindow[method] = () => {
-                    this.logBlockedEvent(method, iframe.src);
-                    return null;
-                };
-            });
-
-            // Intercept iframe link clicks
-            iframeDocument.addEventListener('click', (event) => {
-                const target = event.target.closest('a');
-                if (target && target.target === '_blank') {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    this.logBlockedPopup(target.href, 'iframe-link');
-                }
-            }, true);
-        }
-
-        monitorIframeBehavior(iframe) {
-            // Monitor for behavioral patterns when direct injection isn't possible
-            const checkForPopups = setInterval(() => {
-                if (!document.body.contains(iframe)) {
-                    clearInterval(checkForPopups);
-                    return;
-                }
-                
-                // Check if iframe triggered window blur (possible popup)
-                if (document.activeElement === iframe) {
-                    this.temporaryPopupBlock(500);
-                }
-            }, 1000);
-
-            // Auto-cleanup
-            setTimeout(() => clearInterval(checkForPopups), 30000);
-        }
-
-        setupMutationObserver() {
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === Node.ELEMENT_NODE) {
-                            if (node.tagName === 'IFRAME') {
-                                setTimeout(() => this.applySandboxPolicy(node), 0);
-                            }
-                            node.querySelectorAll?.('iframe').forEach(iframe => {
-                                setTimeout(() => this.applySandboxPolicy(iframe), 0);
-                            });
-                        }
-                    });
-                });
-            });
-
-            observer.observe(document.documentElement, {
-                childList: true,
-                subtree: true
-            });
-        }
-
-        setupMessageInterceptor() {
-            window.addEventListener('message', (event) => {
-                // Block postMessage calls that might trigger popups
-                if (typeof event.data === 'string' && 
-                    (event.data.includes('open') || event.data.includes('popup'))) {
-                    event.stopPropagation();
-                    this.logBlockedEvent('postMessage', event.data);
-                }
-            }, true);
-        }
-
-        setupBlurHandler() {
-            let lastFocusTime = Date.now();
-            
-            window.addEventListener('blur', () => {
-                const now = Date.now();
-                // If blur happens quickly after focus, it's likely a popup
-                if (now - lastFocusTime < 100) {
-                    this.logBlockedPopup('window-blur', 'auto-popup');
-                    // Force focus back
-                    setTimeout(() => window.focus(), 10);
-                }
-            });
-
-            window.addEventListener('focus', () => {
-                lastFocusTime = Date.now();
-            });
-        }
-
-        isTrustedVideo(iframe) {
-            const src = iframe.src || '';
-            return Array.from(this.trustedVideoDomains).some(domain => 
-                src.includes(domain)
-            );
-        }
-
-        shouldBlockPopup(url, source) {
-            if (!url) return true;
-            
-            // Allow same-origin popups
-            try {
-                const urlObj = new URL(url, window.location.href);
-                if (urlObj.origin === window.location.origin) {
-                    return false;
-                }
-            } catch (e) {
+    
+    // Lista de dominios de anuncios conocidos
+    const adDomains = [
+        'doubleclick.net',
+        'googleadsyndication.com',
+        'googlesyndication.com',
+        'adsystem.com',
+        'adservice.google.com',
+        'facebook.com/plugins',
+        'amazon-adsystem.com',
+        'taboola.com',
+        'outbrain.com',
+        'revcontent.com',
+        'ads.',
+        'ad.',
+        'banner',
+        'popup',
+        'tracking',
+        'analytics',
+        'beacon',
+        'affiliate',
+        'promo'
+    ];
+    
+    function isAdIframe(iframe) {
+        const src = iframe.src || '';
+        const className = iframe.className || '';
+        const id = iframe.id || '';
+        
+        // Verificar si coincide con dominios de anuncios
+        for (let domain of adDomains) {
+            if (src.includes(domain) || 
+                className.includes(domain) || 
+                id.includes(domain)) {
                 return true;
             }
-
-            // Block ad patterns
-            return this.adPatterns.some(pattern => pattern.test(url));
         }
-
-        logBlockedPopup(url, source) {
-            console.warn(`🚫 Popup blocked [${source}]:`, url);
+        
+        // Verificar por dimensiones típicas de anuncios
+        const width = iframe.offsetWidth;
+        const height = iframe.offsetHeight;
+        
+        const adSizes = [
+            {w: 728, h: 90},   // Leaderboard
+            {w: 300, h: 250},  // Medium Rectangle
+            {w: 336, h: 280},  // Large Rectangle
+            {w: 160, h: 600},  // Wide Skyscraper
+            {w: 120, h: 600},  // Skyscraper
+            {w: 300, h: 600},  // Half Page
+            {w: 970, h: 90},   // Large Leaderboard
+            {w: 970, h: 250},  // Billboard
+            {w: 250, h: 250},  // Square
+            {w: 200, h: 200}   // Small Square
+        ];
+        
+        for (let size of adSizes) {
+            if (Math.abs(width - size.w) <= 5 && Math.abs(height - size.h) <= 5) {
+                return true;
+            }
         }
-
-        logBlockedEvent(eventType, source) {
-            console.warn(`🚫 Event blocked [${eventType}]:`, source);
-        }
-
-        logIframeInteraction(iframe) {
-            console.log(`🎥 Iframe interaction:`, iframe.src);
-        }
-
-        showBlockNotification() {
-            // Optional: Show subtle notification
-            const existing = document.getElementById('popup-block-notification');
-            if (existing) existing.remove();
-
-            const notification = document.createElement('div');
-            notification.id = 'popup-block-notification';
-            notification.innerHTML = '🛡️ Popup blocked';
-            notification.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: #2ed573;
-                color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
-                font-size: 12px;
-                font-family: system-ui, sans-serif;
-                z-index: 10000;
-                opacity: 0;
-                transition: opacity 0.3s;
-            `;
-
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.style.opacity = '1', 10);
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => notification.remove(), 300);
-            }, 2000);
+        
+        return false;
+    }
+    
+    function blockAdIframes() {
+        const iframes = document.querySelectorAll('iframe');
+        let blockedCount = 0;
+        
+        iframes.forEach(iframe => {
+            if (isAdIframe(iframe)) {
+                console.log('🚫 Iframe de anuncio bloqueado:', iframe.src);
+                iframe.remove();
+                blockedCount++;
+            }
+        });
+        
+        if (blockedCount > 0) {
+            console.log(`✅ Bloqueados ${blockedCount} iframes de anuncios`);
         }
     }
-
-    // Initialize immediately
-    new ProfessionalPopupBlocker();
-
+    
+    // Observar nuevos iframes que se agreguen
+    const observer = new MutationObserver(function(mutations) {
+        let newIframes = false;
+        
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.tagName === 'IFRAME') {
+                    newIframes = true;
+                } else if (node.querySelectorAll) {
+                    const iframes = node.querySelectorAll('iframe');
+                    if (iframes.length > 0) {
+                        newIframes = true;
+                    }
+                }
+            });
+        });
+        
+        if (newIframes) {
+            setTimeout(blockAdIframes, 100);
+        }
+    });
+    
+    // Iniciar
+    function init() {
+        console.log('🛡️ Bloqueador de anuncios activado');
+        
+        // Bloquear anuncios existentes
+        blockAdIframes();
+        
+        // Observar cambios en el DOM
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        // Escanear periódicamente
+        setInterval(blockAdIframes, 2000);
+    }
+    
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
 })();
