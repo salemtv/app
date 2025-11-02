@@ -36,8 +36,8 @@ async function loadAllData(){
     fetchJSON('data/envi.json', null)
   ]);
 
-  PAGES.images = images || {title:'Imagenes', items:[]};
-  PAGES.envi = envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
+  PAGES.images = images || {title:'Collections', items:[]};
+  PAGES.envi = envi || {title:'Channels', defaultStream:'foxsports'};
 
   renderPage(localStorage.getItem(LS_TAB) || 'envi');
 }
@@ -59,7 +59,7 @@ function renderPage(tabName){
 
 /* ---------------- Images ---------------- */
 function renderImages(){
-  const p = PAGES.images || {title:'Imágenes', items:[]};
+  const p = PAGES.images || {title:'Collections', items:[]};
   const container = document.createElement('div');
   container.innerHTML = `<h3 style="margin-bottom:8px">${p.title}</h3>`;
   
@@ -458,7 +458,7 @@ document.head.appendChild(style);
 
 /* ---------------- EnVi ---------------- */
 function renderEnVi(){
-  const p = PAGES.envi || {title:'Mundo Fútbol', defaultStream:'foxsports'};
+  const p = PAGES.envi || {title:'Channels', defaultStream:'foxsports'};
   const container = document.createElement('div');
   container.innerHTML = `
     <h3 style="margin-bottom:8px">${p.title}</h3>
@@ -577,7 +577,7 @@ function initCustomSelector() {
 }
 /* ---------------- EnVi 2 ---------------- */
 function renderEnVi2(){
-  const p = {title:'Resto del Mundo', defaultStream:'history'};
+  const p = {title:'Latam TV', defaultStream:'history'};
   const container = document.createElement('div');
   container.innerHTML = `
     <h3 style="margin-bottom:8px">${p.title}</h3>
