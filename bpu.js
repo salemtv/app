@@ -1,45 +1,75 @@
-// detector-popups.js
+// iframe-overlay-blocker.js
 (function() {
     'use strict';
     
-    console.log('🔍 Detector de ventanas emergentes activado');
+    console.log('🛡️ Bloqueador por overlay activado');
     
-    let popupDetected = false;
-    
-    // 1. Guardar el window.open original
+    // 1. BLOQUEAR window.open completamente en la ventana principal
     const originalOpen = window.open;
-    
-    // 2. Reemplazar window.open con nuestro detector
     window.open = function(url, name, specs) {
-        console.log('🚨 Se intentó abrir ventana:', url);
-        popupDetected = true;
-        
-        // Mostrar notificación inmediatamente
+        console.log('🚫 Ventana bloqueada desde página principal');
         showNotification('Ventana emergente bloqueada');
-        
-        // Devolver null para bloquear la ventana
         return null;
     };
     
-    // 3. Función para mostrar notificación solo cuando se bloquea
+    // 2. Crear overlay transparente sobre TODOS los iframes
+    function createOverlayOnIframes() {
+        const iframes = document.querySelectorAll('iframe');
+        
+        iframes.forEach(iframe => {
+            // Verificar si ya tiene overlay
+            if (iframe.hasAttribute('data-overlay-added')) {
+                return;
+            }
+            
+            // Crear contenedor para el iframe
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.display = 'inline-block';
+            
+            // Mover el iframe al contenedor
+            iframe.parentNode.insertBefore(container, iframe);
+            container.appendChild(iframe);
+            
+            // Crear overlay transparente
+            const overlay = document.createElement('div');
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.zIndex = '9999';
+            overlay.style.cursor = 'pointer';
+            
+            // Agregar overlay al contenedor
+            container.appendChild(overlay);
+            
+            // Marcar que ya tiene overlay
+            iframe.setAttribute('data-overlay-added', 'true');
+            
+            console.log('✅ Overlay agregado a iframe');
+        });
+    }
+    
+    // 3. Función de notificación
     function showNotification(message) {
-        // Eliminar notificación anterior si existe
-        const existing = document.querySelector('.popup-notification');
+        // Eliminar notificación anterior
+        const existing = document.querySelector('.blocker-notification');
         if (existing) existing.remove();
         
         const notification = document.createElement('div');
-        notification.className = 'popup-notification';
+        notification.className = 'blocker-notification';
         notification.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; padding: 12px;">
-                <span style="font-size: 24px;">🚫</span>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px;">
+                <span style="font-size: 20px;">🚫</span>
                 <div>
-                    <strong style="display: block;">${message}</strong>
-                    <small style="opacity: 0.8;">Se detectó y bloqueó una ventana emergente</small>
+                    <strong>${message}</strong>
+                    <div style="font-size: 12px; margin-top: 4px;">Clic en iframe bloqueado</div>
                 </div>
             </div>
         `;
         
-        // Estilos de la notificación
+        // Estilos
         Object.assign(notification.style, {
             position: 'fixed',
             top: '20px',
@@ -51,99 +81,56 @@
             fontSize: '14px',
             zIndex: '10000',
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            border: '2px solid #ff6b81',
-            maxWidth: '320px',
-            opacity: '0',
-            transform: 'translateX(100px)',
-            transition: 'all 0.3s ease'
+            border: '2px solid #ff6b81'
         });
         
         document.body.appendChild(notification);
         
-        // Animación de entrada
+        // Auto-eliminar
         setTimeout(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        // Auto-eliminar después de 3 segundos
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100px)';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
+            notification.remove();
         }, 3000);
     }
     
-    // 4. Sistema de monitoreo para iframes
-    function monitorIframes() {
-        const iframes = document.querySelectorAll('iframe');
-        
-        iframes.forEach(iframe => {
-            try {
-                // Cuando el iframe carga, proteger su contenido
-                iframe.addEventListener('load', function() {
-                    try {
-                        const iframeWindow = iframe.contentWindow;
-                        
-                        // Sobrescribir window.open dentro del iframe
-                        iframeWindow.open = function(url) {
-                            console.log('🚨 Ventana desde iframe detectada:', url);
-                            showNotification('Ventana emergente bloqueada');
-                            return null;
-                        };
-                        
-                    } catch (error) {
-                        // Error de CORS - normal para iframes de otros dominios
-                        console.log('⚠️ Iframe protegido (CORS):', iframe.src);
-                    }
-                });
-            } catch (error) {
-                console.log('⚠️ No se pudo monitorear iframe:', iframe.src);
-            }
-        });
-    }
-    
-    // 5. Observar nuevos iframes
+    // 4. Observar nuevos iframes
     const observer = new MutationObserver(function(mutations) {
-        let newIframes = false;
+        let iframesAdded = false;
         
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
                 if (node.tagName === 'IFRAME') {
-                    newIframes = true;
+                    iframesAdded = true;
                 }
             });
         });
         
-        if (newIframes) {
-            setTimeout(monitorIframes, 100);
+        if (iframesAdded) {
+            setTimeout(createOverlayOnIframes, 100);
         }
     });
     
-    // 6. Verificar cada segundo si se abrieron ventanas (como medida de seguridad)
-    setInterval(() => {
-        // Esta es una protección adicional
-        if (popupDetected) {
-            popupDetected = false;
-        }
-    }, 1000);
+    // 5. Hacer window.open inmutable
+    Object.defineProperty(window, 'open', {
+        value: function() {
+            showNotification('Ventana emergente bloqueada');
+            return null;
+        },
+        writable: false,
+        configurable: false
+    });
     
-    // 7. Inicializar
+    // 6. Inicializar
     function init() {
-        monitorIframes();
+        createOverlayOnIframes();
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
         
-        console.log('✅ Detector listo - Solo bloqueará cuando detecte ventanas');
+        console.log('✅ Bloqueador por overlay activado');
     }
     
-    // Esperar a que el DOM esté listo
+    // Ejecutar
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
