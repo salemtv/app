@@ -1,101 +1,142 @@
-// nuclear-iframe-blocker.js
+// iframe-popup-blocker.js
 (function() {
     'use strict';
     
-    console.log('☢️ BLOQUEADOR NUCLEAR ACTIVADO');
+    console.log('🛡️ Bloqueador de iframes activado');
     
-    // 1. Hacer window.open completamente inutilizable
-    delete window.open;
+    // 1. BLOQUEAR window.open COMPLETAMENTE a nivel del navegador
+    const originalOpen = window.open;
+    window.open = function(url, name, specs) {
+        console.log('🚫 VENTANA BLOQUEADA:', url || 'sin URL');
+        showNotification('Ventana emergente bloqueada');
+        return null;
+    };
+    
+    // 2. Hacerlo permanente e inmutable
     Object.defineProperty(window, 'open', {
-        get: function() {
-            return function() {
-                console.log('🚫 VENTANA BLOQUEADA');
-                showNuclearNotification();
-                return null;
-            };
+        value: function() {
+            showNotification('Ventana emergente bloqueada');
+            return null;
         },
-        set: function() {
-            console.log('🚫 Intento de modificar bloqueo detectado');
-            return function() { return null; };
-        },
+        writable: false,
         configurable: false
     });
     
-    // 2. Interceptar TODOS los eventos de clic
-    document.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        // Si es un iframe o está dentro de uno, BLOQUEAR COMPLETAMENTE
-        if (target.tagName === 'IFRAME' || target.closest('iframe')) {
-            console.log('☢️ CLIC EN IFRAME - ACCIÓN NULIFICADA');
-            
-            // Nuclear: Prevenir todo
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            
-            // Nuclear: Remover el focus del iframe
-            if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-                document.activeElement.blur();
-            }
-            
-            showNuclearNotification();
-            
-            return false;
-        }
-    }, true);
-    
-    // 3. También interceptar mousedown y mouseup
-    ['mousedown', 'mouseup', 'auxclick'].forEach(eventType => {
-        document.addEventListener(eventType, function(e) {
-            if (e.target.tagName === 'IFRAME' || e.target.closest('iframe')) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log(`🚫 ${eventType} en iframe bloqueado`);
-            }
-        }, true);
-    });
-    
-    // 4. Notificación nuclear
-    function showNuclearNotification() {
-        const nukeNotification = document.createElement('div');
-        nukeNotification.innerHTML = '💥 ACCIÓN BLOQUEADA<br><small>Ventana emergente prevenida</small>';
-        
-        Object.assign(nukeNotification.style, {
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: '#ff4757',
-            color: 'white',
-            padding: '20px',
-            borderRadius: '10px',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            zIndex: '10000',
-            textAlign: 'center',
-            boxShadow: '0 0 30px rgba(255, 71, 87, 0.8)',
-            border: '3px solid #ff6b81'
+    // 3. Aplicar sandbox RESTRICTIVO a TODOS los iframes
+    function sandboxAllIframes() {
+        const iframes = document.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+            // Sandbox MÁXIMO - solo permite lo esencial para videos
+            iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+            iframe.style.pointerEvents = 'none'; // 👈 Esto BLOQUEA los clics
         });
-        
-        document.body.appendChild(nukeNotification);
-        
-        setTimeout(() => {
-            nukeNotification.style.opacity = '0';
-            nukeNotification.style.transition = 'opacity 0.5s';
-            setTimeout(() => nukeNotification.remove(), 500);
-        }, 1500);
+        console.log(`✅ ${iframes.length} iframes protegidos`);
     }
     
-    // 5. Auto-refuerzo cada segundo
-    setInterval(() => {
-        window.open = function() { 
-            showNuclearNotification();
-            return null; 
-        };
-    }, 1000);
+    // 4. Observar nuevos iframes y aplicar sandbox inmediatamente
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    if (node.tagName === 'IFRAME') {
+                        setTimeout(() => {
+                            node.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                            node.style.pointerEvents = 'none';
+                        }, 100);
+                    }
+                    // Buscar iframes dentro de elementos nuevos
+                    const iframes = node.querySelectorAll ? node.querySelectorAll('iframe') : [];
+                    iframes.forEach(iframe => {
+                        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                        iframe.style.pointerEvents = 'none';
+                    });
+                }
+            });
+        });
+    });
     
-    console.log('☢️ MODO NUCLEAR: Cero interacciones con iframes permitidas');
+    // 5. Función de notificación
+    function showNotification(message) {
+        // Crear notificación
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px;">
+                <span style="font-size: 20px;">🚫</span>
+                <div>
+                    <strong>${message}</strong>
+                    <div style="font-size: 12px; opacity: 0.8;">Se ha prevenido una ventana emergente</div>
+                </div>
+            </div>
+        `;
+        
+        // Estilos
+        Object.assign(notification.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: '#ff4757',
+            color: 'white',
+            borderRadius: '10px',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            zIndex: '10000',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+            border: '2px solid #ff6b81',
+            maxWidth: '350px',
+            animation: 'slideIn 0.3s ease-out'
+        });
+        
+        // Agregar estilos de animación
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // Auto-eliminar
+        setTimeout(() => {
+            notification.style.animation = 'slideIn 0.3s ease-out reverse';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    // 6. Bloquear cualquier intento de modificar window.open
+    let protectionLevel = 0;
+    setInterval(() => {
+        protectionLevel++;
+        window.open = function() {
+            console.log(`🚫 VENTANA BLOQUEADA (Protección nivel ${protectionLevel})`);
+            showNotification('Ventana emergente bloqueada');
+            return null;
+        };
+    }, 500);
+    
+    // 7. Inicializar
+    function init() {
+        sandboxAllIframes();
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+        console.log('✅ Bloqueador completamente activado');
+        showNotification('Bloqueador activado');
+    }
+    
+    // Ejecutar inmediatamente
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
     
 })();
