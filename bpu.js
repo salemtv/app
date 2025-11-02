@@ -1,131 +1,125 @@
-// simple-adblocker.js
+// no-popups.js
 (function() {
     'use strict';
     
-    // Lista de dominios de anuncios conocidos
-    const adDomains = [
-        'doubleclick.net',
-        'googleadsyndication.com',
-        'googlesyndication.com',
-        'adsystem.com',
-        'adservice.google.com',
-        'facebook.com/plugins',
-        'amazon-adsystem.com',
-        'taboola.com',
-        'outbrain.com',
-        'revcontent.com',
-        'ads.',
-        'ad.',
-        'banner',
-        'popup',
-        'tracking',
-        'analytics',
-        'beacon',
-        'affiliate',
-        'promo'
-    ];
+    console.log('🚫 Bloqueador total de ventanas emergentes activado');
     
-    function isAdIframe(iframe) {
-        const src = iframe.src || '';
-        const className = iframe.className || '';
-        const id = iframe.id || '';
+    // Bloquear window.open completamente
+    window.open = function() {
+        console.log('🚫 Ventana emergente bloqueada');
+        return null;
+    };
+    
+    // Bloquear clics en enlaces que abren nuevas ventanas
+    document.addEventListener('click', function(e) {
+        let target = e.target;
         
-        // Verificar si coincide con dominios de anuncios
-        for (let domain of adDomains) {
-            if (src.includes(domain) || 
-                className.includes(domain) || 
-                id.includes(domain)) {
-                return true;
-            }
+        // Buscar el enlace más cercano
+        while (target && target.tagName !== 'A' && target !== document.body) {
+            target = target.parentElement;
         }
         
-        // Verificar por dimensiones típicas de anuncios
-        const width = iframe.offsetWidth;
-        const height = iframe.offsetHeight;
-        
-        const adSizes = [
-            {w: 728, h: 90},   // Leaderboard
-            {w: 300, h: 250},  // Medium Rectangle
-            {w: 336, h: 280},  // Large Rectangle
-            {w: 160, h: 600},  // Wide Skyscraper
-            {w: 120, h: 600},  // Skyscraper
-            {w: 300, h: 600},  // Half Page
-            {w: 970, h: 90},   // Large Leaderboard
-            {w: 970, h: 250},  // Billboard
-            {w: 250, h: 250},  // Square
-            {w: 200, h: 200}   // Small Square
-        ];
-        
-        for (let size of adSizes) {
-            if (Math.abs(width - size.w) <= 5 && Math.abs(height - size.h) <= 5) {
-                return true;
+        if (target && target.tagName === 'A') {
+            if (target.target === '_blank' || 
+                target.hasAttribute('onclick') || 
+                target.getAttribute('href')?.startsWith('javascript:')) {
+                
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                console.log('🚫 Enlace a nueva ventana bloqueado:', target.href);
+                return false;
             }
         }
-        
-        return false;
-    }
+    }, true); // Usar captura para interceptar temprano
     
-    function blockAdIframes() {
-        const iframes = document.querySelectorAll('iframe');
-        let blockedCount = 0;
-        
-        iframes.forEach(iframe => {
-            if (isAdIframe(iframe)) {
-                console.log('🚫 Iframe de anuncio bloqueado:', iframe.src);
-                iframe.remove();
-                blockedCount++;
+    // Bloquear middle-click (rueda del mouse)
+    document.addEventListener('auxclick', function(e) {
+        if (e.button === 1) { // Middle click
+            let target = e.target;
+            while (target && target.tagName !== 'A' && target !== document.body) {
+                target = target.parentElement;
             }
-        });
-        
-        if (blockedCount > 0) {
-            console.log(`✅ Bloqueados ${blockedCount} iframes de anuncios`);
+            
+            if (target && target.tagName === 'A') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🚫 Middle-click bloqueado');
+            }
         }
-    }
+    }, true);
     
-    // Observar nuevos iframes que se agreguen
+    // Bloquear control+click y shift+click
+    document.addEventListener('click', function(e) {
+        if (e.ctrlKey || e.shiftKey) {
+            let target = e.target;
+            while (target && target.tagName !== 'A' && target !== document.body) {
+                target = target.parentElement;
+            }
+            
+            if (target && target.tagName === 'A') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🚫 Ctrl+Click o Shift+Click bloqueado');
+            }
+        }
+    }, true);
+    
+    // Bloquear eventos de teclado que abren ventanas
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            console.log('🚫 Ctrl+Enter bloqueado');
+        }
+    });
+    
+    // Bloquear beforeunload que podría abrir ventanas
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    });
+    
+    // Prevenir que iframes abran ventanas
     const observer = new MutationObserver(function(mutations) {
-        let newIframes = false;
-        
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
                 if (node.tagName === 'IFRAME') {
-                    newIframes = true;
-                } else if (node.querySelectorAll) {
-                    const iframes = node.querySelectorAll('iframe');
-                    if (iframes.length > 0) {
-                        newIframes = true;
+                    // Aplicar sandbox estricto a todos los iframes
+                    node.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                    
+                    // Intentar bloquear window.open dentro del iframe
+                    try {
+                        node.addEventListener('load', function() {
+                            try {
+                                const iframeWindow = node.contentWindow;
+                                iframeWindow.open = function() {
+                                    console.log('🚫 Ventana desde iframe bloqueada');
+                                    return null;
+                                };
+                            } catch (e) {
+                                // CORS error - normal
+                            }
+                        });
+                    } catch (e) {
+                        // Error al acceder al iframe
                     }
                 }
             });
         });
-        
-        if (newIframes) {
-            setTimeout(blockAdIframes, 100);
-        }
     });
     
-    // Iniciar
-    function init() {
-        console.log('🛡️ Bloqueador de anuncios activado');
-        
-        // Bloquear anuncios existentes
-        blockAdIframes();
-        
-        // Observar cambios en el DOM
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // Escanear periódicamente
-        setInterval(blockAdIframes, 2000);
-    }
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
     
-    // Ejecutar cuando el DOM esté listo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Aplicar a iframes existentes
+    document.querySelectorAll('iframe').forEach(function(iframe) {
+        iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    });
+    
+    console.log('✅ Todas las ventanas emergentes están bloqueadas');
     
 })();
