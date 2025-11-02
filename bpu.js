@@ -1,54 +1,56 @@
-// click-iframe-blocker.js
+// iframe-click-blocker.js
 (function() {
     'use strict';
     
-    console.log('🎯 Bloqueador de clics en iframes activado');
+    console.log('🚫 Bloqueador de clics en iframes activado');
     
-    let iframeClickDetected = false;
-    let originalWindowOpen = window.open;
+    // 1. Bloquear completamente la apertura de nuevas ventanas
+    window.open = function() {
+        console.log('🚫 Ventana emergente bloqueada globalmente');
+        showNotification('Ventana emergente bloqueada');
+        return null;
+    };
     
-    // 1. Detectar cuando se hace clic en cualquier iframe
+    // 2. Prevenir el comportamiento por defecto de ANY click en iframes
     document.addEventListener('click', function(e) {
-        const iframe = e.target.closest('iframe');
-        if (iframe) {
-            iframeClickDetected = true;
-            console.log('🖱️ Clic en iframe detectado - monitoreando ventanas...');
+        // Verificar si el clic es en un iframe o dentro de uno
+        if (e.target.tagName === 'IFRAME' || e.target.closest('iframe')) {
+            console.log('🖱️ Clic en iframe detectado - bloqueando acción');
             
-            // Activar protección temporal por 3 segundos
-            setTimeout(() => {
-                iframeClickDetected = false;
-            }, 3000);
+            // Prevenir completamente la acción
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Mostrar notificación
+            showNotification('Acción bloqueada - Clic en iframe');
+            
+            return false;
+        }
+    }, true); // Usar captura para interceptar ANTES
+    
+    // 3. También bloquear middle-click en iframes
+    document.addEventListener('auxclick', function(e) {
+        if (e.target.tagName === 'IFRAME' || e.target.closest('iframe')) {
+            console.log('🚫 Middle-click en iframe bloqueado');
+            e.preventDefault();
+            e.stopPropagation();
+            showNotification('Clic secundario bloqueado');
+            return false;
         }
     }, true);
     
-    // 2. Interceptar window.open solo cuando viene de clic en iframe
-    window.open = function(url, name, specs) {
-        if (iframeClickDetected) {
-            console.log('🚫 Ventana bloqueada - Origen: clic en iframe');
-            showNotification('Ventana emergente bloqueada');
-            return null;
-        }
-        
-        // Permitir ventanas que no vienen de iframes
-        return originalWindowOpen.call(this, url, name, specs);
-    };
-    
-    // 3. Función para mostrar notificación flotante
+    // 4. Función de notificación
     function showNotification(message) {
         // Eliminar notificación anterior si existe
-        const existing = document.querySelector('.iframe-blocker-notification');
+        const existing = document.querySelector('.blocker-notification');
         if (existing) existing.remove();
         
         const notification = document.createElement('div');
-        notification.className = 'iframe-blocker-notification';
-        notification.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 18px;">🚫</span>
-                <span>${message}</span>
-            </div>
-        `;
+        notification.className = 'blocker-notification';
+        notification.textContent = message;
         
-        // Estilos de la notificación
+        // Estilos
         Object.assign(notification.style, {
             position: 'fixed',
             top: '20px',
@@ -59,72 +61,45 @@
             borderRadius: '8px',
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
-            fontWeight: '500',
+            fontWeight: 'bold',
             zIndex: '10000',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            maxWidth: '300px',
-            transition: 'all 0.3s ease',
-            opacity: '0',
-            transform: 'translateX(100px)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            border: '2px solid #ff6b81'
         });
         
         document.body.appendChild(notification);
         
-        // Animación de entrada
-        setTimeout(() => {
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        // Auto-eliminar después de 3 segundos
+        // Auto-eliminar después de 2 segundos
         setTimeout(() => {
             notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100px)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+            notification.style.transition = 'opacity 0.5s';
+            setTimeout(() => notification.remove(), 500);
+        }, 2000);
     }
     
-    // 4. Proteger iframes existentes SIN afectar videos
-    function protectExistingIframes() {
-        const iframes = document.querySelectorAll('iframe');
-        
-        iframes.forEach(iframe => {
-            // NO aplicar sandbox para no afectar videos
-            // Solo agregar un atributo de identificación
-            iframe.setAttribute('data-iframe-protected', 'true');
-        });
-        
-        console.log(`✅ ${iframes.length} iframes protegidos`);
-    }
-    
-    // 5. Observar nuevos iframes que se agreguen
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1 && node.tagName === 'IFRAME') {
-                    node.setAttribute('data-iframe-protected', 'true');
-                    console.log('✅ Nuevo iframe protegido:', node.src);
-                }
-            });
-        });
+    // 5. Nuclear option: Hacer window.open completamente inmutable
+    Object.defineProperty(window, 'open', {
+        value: function() {
+            console.log('🚫 VENTANA BLOQUEADA PERMANENTEMENTE');
+            showNotification('Ventana emergente bloqueada');
+            return null;
+        },
+        writable: false,
+        configurable: false
     });
     
-    // 6. Inicializar
-    function init() {
-        protectExistingIframes();
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        console.log('✅ Bloqueador listo - Solo bloquea ventanas de clics en iframes');
-    }
+    // 6. Bloquear cualquier intento de sobreescribir nuestro bloqueo
+    let blockAttempts = 0;
+    const originalDefineProperty = Object.defineProperty;
+    Object.defineProperty = function(obj, prop, descriptor) {
+        if (prop === 'open' && obj === window) {
+            blockAttempts++;
+            console.log(`🚫 Intento ${blockAttempts} de sobreescribir bloqueo detectado`);
+            return obj;
+        }
+        return originalDefineProperty.call(this, obj, prop, descriptor);
+    };
     
-    // Ejecutar cuando el DOM esté listo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    console.log('✅ Bloqueador activado - Cero ventanas emergentes permitidas');
     
 })();
