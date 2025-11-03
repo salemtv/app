@@ -645,7 +645,7 @@ function renderEnVi2(){
   const loader = document.getElementById('loader2');
   const badge = document.getElementById('liveBadge2');
   const canalSaved = localStorage.getItem('canalSeleccionado2') || p.defaultStream || 'history';
-  iframe.src = `xhttps://embed.saohgdasregions.fun/embed/${canalSaved}.html`;
+  iframe.src = `https://embed.saohgdasregions.fun/embed/${canalSaved}.html`;
   iframe.onload = () => { if (loader) loader.style.display='none'; if (badge) badge.classList.add('visible'); }
 
   document.getElementById('reloadBtn2').addEventListener('click', () => {
@@ -685,7 +685,7 @@ function initCustomSelector2() {
       localStorage.setItem('canalSeleccionado2', value);
       if (loader) loader.style.display = 'flex';
       if (badge) badge.classList.remove('visible');
-      iframe.src = `xhttps://embed.saohgdasregions.fun/embed/${value}.html`;
+      iframe.src = `https://embed.saohgdasregions.fun/embed/${value}.html`;
     });
   });
 
