@@ -2,6 +2,27 @@
   "title": "Collections",
   "items": [
     {
+      "id": "Terrifier 3: Payaso Siniestro",
+      "title": "Terrifier 3: Payaso Siniestro",
+      "tag": "2024",
+      "image": "https://image.tmdb.org/t/p/original/63xYQj1BwRFielxsBDXvHIJyXVm.jpg",
+      "video": "https://cdn.flick.vip/1034541/index.m3u8?v=2942992052"
+    },
+    {
+      "id": "Terrifier 2: El Payaso Siniestro",
+      "title": "Terrifier 2: El Payaso Siniestro",
+      "tag": "2022",
+      "image": "https://image.tmdb.org/t/p/original/mUEojN1bfXS8mk4D6Pf0Q1JYwMJ.jpg",
+      "video": "https://cdn.flick.vip/663712/index.m3u8?v=4572408306"
+    },
+    {
+      "id": "Terrifier",
+      "title": "Terrifier",
+      "tag": "2018",
+      "image": "https://image.tmdb.org/t/p/original/4lwh4MX2yCogHflyAYMRbfdnpnm.jpg",
+      "video": "https://cdn.flick.vip/420634/index.m3u8?v=2511171590"
+    },
+    {
       "id": "Extraterritorial",
       "title": "Extraterritorial",
       "tag": "2025, Netflix",
