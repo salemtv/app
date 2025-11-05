@@ -2,12 +2,25 @@
   "title": "Collections",
   "items": [
     {
-      "id": "ESPN",
-      "title": "ESPN",
-      "tag": "2025",
-      "image": "https://image.tmdb.org/t/p/original/5Wb1sOZvFulzzJE5JDWCnFSCvJ5.jpg",
-      "video": "https://la14hd.com/vivo/canales.php?stream=tycsports",
-      "featured": true
+      "id": ["El hombre araña 3", "Spiderman 3", "Spider-Man 3"],
+      "title": "Spider-Man 3",
+      "tag": "2007",
+      "image": "https://image.tmdb.org/t/p/original/qFmwhVUoUSXjkKRmca5yGDEXBIj.jpg",
+      "video": "https://cdn.flick.vip/559/index.m3u8?v=3354455653"
+    },
+    {
+      "id": ["El hombre araña 2", "Spiderman 2", "Spider-Man 2"],
+      "title": "Spider-Man 2",
+      "tag": "2004",
+      "image": "https://image.tmdb.org/t/p/original/aGuvNAaaZuWXYQQ6N2v7DeuP6mB.jpg",
+      "video": "https://cdn.flick.vip/558/index.m3u8?v=4022266861"
+    },
+    {
+      "id": ["El hombre araña", "Spiderman", "Spider-Man"],
+      "title": "Spider-Man",
+      "tag": "2002",
+      "image": "https://image.tmdb.org/t/p/original/39cmjIbz1Exa50IpmF7eI3XuRe0.jpg",
+      "video": "https://cdn.flick.vip/557/index.m3u8?v=3291482721"
     },
     {
       "id": "Riesgo bajo Cero: Venganza",
