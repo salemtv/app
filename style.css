@@ -1,13 +1,13 @@
 :root {
-      --color-bg: #00e0ff;
-      --color-primary: #050505;
-      --color-secondary: #0f0f1a;
+      --color-bg: #ff00aa;
+      --color-primary: #000;
+      --color-secondary: #1d1d20;
       --color-black: black;
-      --color-accent: #ff00aa;
+      --color-accent: #00e0ff;
       --color-text: #ffffff;
       --color-muted: #9aa3b5;
-      --color-button: #141428;
-      --color-button-hover: #1f1f3a;
+      --color-button: #2c2c30;
+      --color-button-hover: #3b3a40;
 	  --font: 1rem;
 	  --font-xs: 0.8rem;
       --font-xxs: 0.6rem;
