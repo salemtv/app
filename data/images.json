@@ -2,6 +2,14 @@
   "title": "Collections",
   "items": [
     {
+      "id": "ESPN",
+      "title": "ESPN",
+      "tag": "2025",
+      "image": "https://image.tmdb.org/t/p/original/5Wb1sOZvFulzzJE5JDWCnFSCvJ5.jpg",
+      "video": "https://la14hd.com/vivo/canales.php?stream=tycsports",
+      "featured": true
+    },
+    {
       "id": "Riesgo bajo Cero: Venganza",
       "title": "Riesgo bajo Cero: Venganza",
       "tag": "2025",
