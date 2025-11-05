@@ -454,7 +454,7 @@ font-size: 32px;
   background: var(--color-secondary);
 }
 .card.featured:hover {
-    background: salmon;
+    background: var(--color-accent);
     }
 
 .card, .card.featured {
