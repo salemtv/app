@@ -1,13 +1,13 @@
 :root {
-      --color-bg: slateblue;
-      --color-primary: #0e0c1a;
-      --color-secondary: #1e1e2f;
+      --color-bg: #00e0ff;
+      --color-primary: #050505;
+      --color-secondary: #0f0f1a;
       --color-black: black;
-      --color-accent: #e50914;/*rojo*/
+      --color-accent: #ff00aa;
       --color-text: #ffffff;
-      --color-muted: #9aa3b5;/*plomo*/
-      --color-button: #2a2a40;
-      --color-button-hover: #3a3a5c;
+      --color-muted: #9aa3b5;
+      --color-button: #141428;
+      --color-button-hover: #1f1f3a;
 	  --font: 1rem;
 	  --font-xs: 0.8rem;
       --font-xxs: 0.6rem;
