@@ -1,0 +1,158 @@
+{
+  "templates": {
+    "1": "https://la14hd.com/vivo/canales.php?stream={DATAVALUE}",
+    "2": "https://streamtpnew.com/premier.php?stream={DATAVALUE}",
+    "3": "https://embed.saohgdasregions.fun/embed/{DATAVALUE}.html"
+  },
+  "channels": [
+
+	{
+      "id": "1",
+      "dataValue": "liga1max",
+      "group": "liga1max",
+	  "groupName": "L1 MAX",
+	  "groupImage": "i/l1-ban.png",
+      "name": "L1 MAX",
+      "image": "i/l1.jpg",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "liga1max",
+      "group": "liga1max",
+      "name": "L1 MAX",
+      "image": "i/l1.jpg",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "liga1max",
+      "group": "liga1max",
+      "name": "L1 MAX",
+      "image": "i/l1.jpg",
+      "description": "Opción 480p"
+    },
+
+
+	{
+      "id": "2",
+      "dataValue": "fanatiz1",
+      "group": "Fanatiz",
+	  "groupName": "Fanatiz Channels",
+	  "groupImage": "i/fanatiz-ban.png",
+      "name": "Fanatiz 1",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+	{
+      "id": "2",
+      "dataValue": "fanatiz2",
+      "group": "Fanatiz",
+      "name": "Fanatiz 2",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+	{
+      "id": "2",
+      "dataValue": "fanatiz3",
+      "group": "Fanatiz",
+      "name": "Fanatiz 3",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+
+
+
+    {
+      "id": "1",
+      "dataValue": "espn",
+      "group": "espn",
+	  "groupName": "ESPN",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn",
+      "group": "espn",
+      "name": "ESPN",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn",
+      "group": "espn",
+      "name": "ESPN",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    },
+
+
+    {
+      "id": "1",
+      "dataValue": "espn2",
+      "group": "espn2",
+	  "groupName": "ESPN 2",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 2",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn2",
+      "group": "espn2",
+      "name": "ESPN 2",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn2",
+      "group": "espn2",
+      "name": "ESPN 2",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    },
+
+
+	{
+      "id": "1",
+      "dataValue": "espn3",
+      "group": "espn3",
+	  "groupName": "ESPN 3",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 3",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn3",
+      "group": "espn3",
+      "name": "ESPN 3",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn3",
+      "group": "espn3",
+      "name": "ESPN 3",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    }
+
+  ],
+  "banners": [
+	{
+      "title": "Yape",
+      "description": "!Si te gustó, ayúdanos!",
+      "image": "https://upload.wikimedia.org/wikipedia/commons/0/08/Icono_de_la_aplicaci%C3%B3n_Yape.png",
+      "content": "<p>Ayudanos a mejorar.</p><p>Toda donación mantiene la esperanza de seguir nuestra web.</p>"
+    }
+  ]
+}

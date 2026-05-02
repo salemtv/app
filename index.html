@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Stream TV">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+  <meta name="description" content="Reproductor multi-stream iOS">
+  <title>Salem TV</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,200,1,0">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23007AFF'/%3E%3Cpath d='M90 45 L120 90 L90 105 L60 90 Z' fill='white'/%3E%3Cpath d='M90 105 L120 120 L90 135 L60 120 Z' fill='white' opacity='0.7'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div id="app">
+    <!-- HOME VIEW -->
+    <div id="homeView" class="view active">
+      <div class="ios-header">
+        <div class="header-top">
+          <h1 class="header-title">Salem TV</h1>
+          <div class="header-actions">
+            <button id="infoBtn" class="header-btn material-symbols-outlined" aria-label="Información">info</button>
+            <button id="themeBtn" class="header-btn material-symbols-outlined" aria-label="Cambiar tema">dark_mode</button>
+          </div>
+        </div>
+        <div class="search-container">
+          <span class="search-icon material-symbols-outlined">search</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Buscar canales..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          <button id="searchClear" class="search-clear material-symbols-outlined" aria-label="Limpiar">close</button>
+        </div>
+        <div id="resultsCount" class="results-count"></div>
+      </div>
+      <div class="channels-scroll">
+        <div id="channelsGrid" class="channels-grid"></div>
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon material-symbols-outlined">search</div>
+          <p class="empty-text">No se encontraron canales</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAYER VIEW -->
+    <div id="playerView" class="view">
+      <div class="player-header">
+        <button id="playerBack" class="player-back material-symbols-outlined" aria-label="Regresar">arrow_back_ios</button>
+        <div id="playerTitle" class="player-title">Canal</div>
+      </div>
+
+      <div class="player-media-wrap">
+        <div id="playerLoader" class="player-loader">
+          <div class="spinner"></div>
+        </div>
+        <div class="player-video-box">
+          <video id="playerVideo" playsinline webkit-playsinline controls style="display:none;"></video>
+          <iframe id="playerFrame" allowfullscreen style="display:none;"></iframe>
+        </div>
+      </div>
+
+      <div class="player-controls">
+        <div class="player-controls-left">
+          <button id="optionsBtn" class="ctrl-btn options-btn" aria-label="Opciones">
+            <span class="material-symbols-outlined ctrl-icon">list</span>
+            <span>Opciones</span>
+          </button>
+        </div>
+        <div class="player-controls-right">
+          <button id="refreshBtn" class="ctrl-btn" aria-label="Refrescar">
+            <span class="material-symbols-outlined ctrl-icon">refresh</span>
+            <span>Refrescar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTIONS / BANNER BOTTOM SHEET -->
+    <div id="sheetOverlay" class="sheet-overlay"></div>
+    <div id="optionsSheet" class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="sheetTitle">Opciones disponibles</div>
+        <div class="sheet-subtitle" id="sheetSubtitle">Selecciona una señal</div>
+      </div>
+      <div class="sheet-body" id="sheetBody"></div>
+      <button id="sheetCancel" class="sheet-cancel">Cancelar</button>
+    </div>
+
+    <!-- INFO BOTTOM SHEET -->
+    <div id="infoOverlay" class="sheet-overlay"></div>
+    <div id="infoSheet" class="sheet info-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Información</div>
+        <div class="sheet-subtitle">Acerca de Salem TV</div>
+      </div>
+      <div class="sheet-body info-sheet-body">
+        <!-- ===== CONTENIDO EDITABLE ===== -->
+        <div class="info-content">
+          <h3>¿Cómo usar la app?</h3>
+          <p>Selecciona cualquier canal de la lista principal para comenzar a reproducir. Si un canal tiene múltiples opciones, podrás elegir la que mejor te convenga.</p>
+
+          <h3>Preguntas frecuentes</h3>
+          <p><b>¿La app consume muchos datos?</b><br>Esto depende de la calidad del stream. Se recomienda usar Wi-Fi para una mejor experiencia.</p>
+          <p><b>¿Puedo usarla en iOS/Android?</b><br>Sí, está optimizada para funcionar en cualquier dispositivo móvil, si observas algún problema no dudes en avisarnos.</p>
+
+<p><b>¿Si un canal no está disponible?</b></p>
+          <p>Si las señales se caen, presentan problemas o no se encuentra un canal, avisanos para comenzar a trabajar en ello y traer el contenido que se necesita.</p>
+
+<p><b>¿Publicidad molesta?</b></p>
+<p>Para usuario IOS se recomienda descargar <b>Adblock for Safari o Navegador Brave</b>.</p>
+<p>Para usuario Android se recomienda descargar <b>AdGuard o Navegador Brave</b>.</p>
+<p>Los anuncios son externos y se recomienda descargar para una mejor experiencia de usuario.</p>
+
+<br />
+          <h3>Créditos</h3>
+          <p>Salem TV v1.19</p>
+        </div>
+        <!-- ===== FIN CONTENIDO EDITABLE ===== -->
+      </div>
+      <button id="infoCloseBtn" class="sheet-cancel">Cerrar</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
