@@ -100,6 +100,7 @@ html, body {
   overflow: hidden;
   background: var(--ios-bg);
   color: var(--ios-text);
+  position: relative;
 }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
@@ -109,9 +110,23 @@ html, body {
   width: 100%;
   height: 100dvh;
   overflow: hidden;
-  position: relative;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
+@media (min-width: 800px) {
+#app {
+  width: 800px;
+  margin: 0 auto;
+  }
+.channels-scroll {
+  padding: 15px 0px;
+  }
+}
+  
 .view {
   position: absolute;
   inset: 0;
@@ -131,7 +146,7 @@ html, body {
 
 /* Header */
 .ios-header {
-  padding: var(--safe-top) 16px 12px;
+  padding: var(--safe-top) 15px 15px;
   background: var(--ios-surface);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -253,7 +268,7 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: 12px;
+  padding: 15px;
   padding-bottom: max(24px, var(--safe-bottom));
 }
 
