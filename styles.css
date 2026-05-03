@@ -156,7 +156,10 @@ html, body {
 
 /* Header */
 .ios-header {
-  padding: var(--safe-top) 15px 15px;
+  padding-top: max(15px, var(--safe-top));
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 15px;
   background: var(--ios-surface);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
