@@ -60,6 +60,62 @@
       "image": "i/fanatiz.jpg",
       "description": "Opción HD"
     },
+    {
+      "id": "2",
+      "dataValue": "fanatiz4",
+      "group": "Fanatiz",
+      "name": "Fanatiz 4",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz5",
+      "group": "Fanatiz",
+      "name": "Fanatiz 5",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz6",
+      "group": "Fanatiz",
+      "name": "Fanatiz 6",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz7",
+      "group": "Fanatiz",
+      "name": "Fanatiz 7",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz8",
+      "group": "Fanatiz",
+      "name": "Fanatiz 8",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz9",
+      "group": "Fanatiz",
+      "name": "Fanatiz 9",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
+    {
+      "id": "2",
+      "dataValue": "fanatiz10",
+      "group": "Fanatiz",
+      "name": "Fanatiz 10",
+      "image": "i/fanatiz.jpg",
+      "description": "Opción HD"
+    },
 
 
 
