@@ -464,7 +464,6 @@ html, body {
   justify-content: center;
   text-align: center;
   cursor: pointer;
-  font-size: 20px;
   transition: background 0.2s;
   padding: 0;
 }
