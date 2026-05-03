@@ -127,7 +127,6 @@ html, body {
   }
   #ios-header {
     border-radius: 20px;
-    margin-top: 15px;
     }
 }
   
@@ -163,7 +162,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 15px;
+  margin: 15px 0px;
 }
 
 .header-title {
