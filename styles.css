@@ -24,8 +24,8 @@
 
 /* ===== iOS Design System ===== */
 :root {
-  --ios-blue: #007AFF;
-  --ios-blue-dark: #0A84FF;
+  --ios-blue: slateblue;/*#007AFF;*/
+  --ios-blue-dark: darkslateblue;/*#0A84FF;*/
   --ios-green: #34C759;
   --ios-red: #FF3B30;
   --ios-gray: #8E8E93;
