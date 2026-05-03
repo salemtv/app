@@ -172,7 +172,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 15px 0px;
+  margin-bottom: 15px;
 }
 
 .header-title {
