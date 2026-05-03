@@ -156,7 +156,7 @@ html, body {
 
 /* Header */
 .ios-header {
-  padding: 15px 15px max(15px, var(--safe-top));
+  padding: var(--safe-top) 15px 15px;
   background: var(--ios-surface);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -449,7 +449,7 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  padding: 15px 15px max(15px, var(--safe-top));
+  padding: var(--safe-top) 15px 15px;
   background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
   z-index: 10;
   display: flex;
