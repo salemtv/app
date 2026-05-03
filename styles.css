@@ -123,8 +123,12 @@ html, body {
   margin: 0 auto;
   }
 .channels-scroll {
-  padding: 15px 0px;
+  padding: 15px 0px!important;
   }
+  #ios-header {
+    border-radius: 20px;
+    margin-top: 15px;
+    }
 }
   
 .view {
@@ -159,7 +163,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin: 15px;
 }
 
 .header-title {
@@ -275,7 +279,7 @@ html, body {
 .tiles-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
   padding-bottom: 20px;
 }
 
@@ -289,14 +293,14 @@ html, body {
 @media (min-width: 768px) {
   .tiles-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    gap: 12px;
   }
 }
 
 @media (min-width: 1024px) {
   .tiles-grid {
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
+    gap: 12px;
   }
 }
 
