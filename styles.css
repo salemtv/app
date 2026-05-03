@@ -292,7 +292,7 @@ html, body {
 @media (min-width: 480px) {
   .tiles-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 15px;
   }
 }
 
@@ -578,7 +578,7 @@ html, body {
 
 .ctrl-btn {
   height: 40px;
-  padding: 0 16px;
+  padding: 0 15px;
   border-radius: 20px;
   background: rgba(255,255,255,0.2);
   backdrop-filter: blur(12px);
@@ -663,7 +663,7 @@ html, body {
 }
 
 .sheet-header {
-  padding: 8px 20px 16px;
+  padding: 8px 20px 15px;
   border-bottom: 0.5px solid var(--ios-separator);
 }
 
@@ -683,7 +683,7 @@ html, body {
 .sheet-body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 16px 16px;
+  padding: 8px 15px 15px;
 }
 
 /* Sheet item with live badge */
@@ -752,7 +752,7 @@ html, body {
 }
 
 .sheet-cancel {
-  margin: 0 16px 12px;
+  margin: 0 15px 12px;
   padding: 14px;
   border-radius: 14px;
   background: var(--ios-bg);
@@ -770,7 +770,7 @@ html, body {
 
 /* ===== Info Sheet ===== */
 .info-sheet-body {
-  padding: 16px 20px;
+  padding: 15px 20px;
 }
 
 .info-content {
@@ -782,7 +782,7 @@ html, body {
 .info-content h3 {
   font-size: 17px;
   font-weight: 700;
-  margin: 16px 0 8px;
+  margin: 15px 0 8px;
   color: var(--ios-text);
 }
 
