@@ -125,7 +125,7 @@ html, body {
 .channels-scroll {
   padding: 15px 0px!important;
   }
-  #ios-header {
+  .ios-header {
     border-radius: 20px;
     }
 }
