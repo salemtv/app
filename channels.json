@@ -200,6 +200,90 @@
       "name": "ESPN 3",
       "image": "i/espn.png",
       "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "espn4",
+      "group": "espn4",
+	  "groupName": "ESPN 4",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 4",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn4",
+      "group": "espn4",
+      "name": "ESPN 4",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn4",
+      "group": "espn4",
+      "name": "ESPN 4",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "espn5",
+      "group": "espn5",
+	  "groupName": "ESPN 5",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 5",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn5",
+      "group": "espn5",
+      "name": "ESPN 5",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn5",
+      "group": "espn5",
+      "name": "ESPN 5",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "espn6",
+      "group": "espn6",
+	  "groupName": "ESPN 6",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 6",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn6",
+      "group": "espn6",
+      "name": "ESPN 6",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn6",
+      "group": "espn6",
+      "name": "ESPN 6",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
     }
 
   ],
