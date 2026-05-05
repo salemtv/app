@@ -117,7 +117,33 @@
       "description": "Opción HD"
     },
 
-
+{
+      "id": "1",
+      "dataValue": "dsports",
+      "group": "dsports",
+	  "groupName": "DSports",
+	  "groupImage": "i/dsports-ban.webp",
+      "name": "Dsports",
+      "image": "i/dsports.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "dsports",
+      "group": "dsports",
+      "name": "DSports",
+      "image": "i/dsports.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "dsports",
+      "group": "dsports",
+      "name": "DSports",
+      "image": "i/dsports.png",
+      "description": "Opción 480p"
+    },
+    
 
     {
       "id": "1",
@@ -282,6 +308,34 @@
       "dataValue": "espn6",
       "group": "espn6",
       "name": "ESPN 6",
+      "image": "i/espn.png",
+      "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "espn7",
+      "group": "espn7",
+	  "groupName": "ESPN 7",
+	  "groupImage": "i/espn-ban.webp",
+      "name": "ESPN 7",
+      "image": "i/espn.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "espn7",
+      "group": "espn7",
+      "name": "ESPN 7",
+      "image": "i/espn.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "espn7",
+      "group": "espn7",
+      "name": "ESPN 7",
       "image": "i/espn.png",
       "description": "Opción 480p"
     }
