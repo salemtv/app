@@ -137,9 +137,65 @@
     },
 	{
       "id": "3",
-      "dataValue": "dsports",
+      "dataValue": "directvsports",
       "group": "dsports",
       "name": "DSports",
+      "image": "i/dsports.png",
+      "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "dsports2",
+      "group": "dsports2",
+	  "groupName": "DSports 2",
+	  "groupImage": "i/dsports-ban.webp",
+      "name": "Dsports 2",
+      "image": "i/dsports.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "dsports2",
+      "group": "dsports2",
+      "name": "DSports 2",
+      "image": "i/dsports.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "directvsports2",
+      "group": "dsports2",
+      "name": "DSports 2",
+      "image": "i/dsports.png",
+      "description": "Opción 480p"
+    },
+    
+    
+    {
+      "id": "1",
+      "dataValue": "dsportsplus",
+      "group": "dsportsplus",
+	  "groupName": "DSports Plus",
+	  "groupImage": "i/dsports-ban.webp",
+      "name": "Dsports Plus",
+      "image": "i/dsports.png",
+      "description": "Opción principal"
+    },
+    {
+      "id": "2",
+      "dataValue": "dsportsplus",
+      "group": "dsportsplus",
+      "name": "DSports Plus",
+      "image": "i/dsports.png",
+      "description": "Opción HD"
+    },
+	{
+      "id": "3",
+      "dataValue": "directvsportsplus",
+      "group": "dsportsplus",
+      "name": "DSports Plus",
       "image": "i/dsports.png",
       "description": "Opción 480p"
     },
