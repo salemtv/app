@@ -1,4 +1,4 @@
-.sound-button {
+#app html body .sound-button {
     position: absolute;
     top: 0;
     right: 0;
@@ -20,6 +20,11 @@
     display: none!important;
 }
 #sub-frame-error .icon-generic {
+    display: none!important;
+}
+
+#sub-frame-error Specificity: (1,0,0)
+ {
     display: none!important;
 }
 
