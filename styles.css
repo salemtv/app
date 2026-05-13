@@ -1,32 +1,43 @@
-#app html body .sound-button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    padding: 10px 20px;
-    background-color: slateblue!important;
-    color: #fff;
-    border: none;
-    border-radius: 16px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color .3s;
-    z-index: 99;
-    width: 100%;
-    margin: 15px;
+/* ===== Banners de OS en header ===== */
+.os-banner {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: transform 0.15s ease;
 }
 
-#sub-frame-error-details {
-    display: none!important;
-}
-#sub-frame-error .icon-generic {
-    display: none!important;
+.os-banner:active {
+  transform: scale(0.95);
 }
 
-#sub-frame-error Specificity: (1,0,0)
- {
-    display: none!important;
+.os-banner .material-symbols-outlined {
+  font-size: 20px;
+font-weight: 700!important;
 }
+
+.os-android {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.os-ios {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+
+
+
+
 
 /* ===== Google Material Symbols ===== */
 .material-symbols-outlined {
@@ -52,65 +63,32 @@
     'opsz' 48;
 }
 
-/* ===== iOS Design System ===== */
+/* ===== VARIABLES GLOBALES - TEMA OSCURO UNICO ===== */
 :root {
-  --ios-blue: slateblue;/*#007AFF;*/
-  --ios-blue-dark: darkslateblue;/*#0A84FF;*/
-  --ios-green: #34C759;
-  --ios-red: #FF3B30;
-  --ios-gray: #8E8E93;
-  --ios-light-gray: #E5E5EA;
-  --ios-bg: #F2F2F7;
-  --ios-surface: rgba(255, 255, 255, 0.82);
-  --ios-surface-solid: #FFFFFF;
-  --ios-text: #000000;
-  --ios-text-secondary: #8E8E93;
-  --ios-border: rgba(0, 0, 0, 0.08);
-  --ios-shadow: rgba(0, 0, 0, 0.08);
-  --ios-separator: rgba(0, 0, 0, 0.1);
-  --ios-search-bg: rgba(120, 120, 128, 0.24);
+  --primary: #6A5ACD;
+  --primary-dark: #483D8B;
+  --primary-light: #8470FF;
+  --accent: tomato;
+  --error: tomato;/*#FF3B30;*/
+
+  --bg: #0f0f1a; /*#0f0f1a;*/
+  --surface: #0f0f1a;/*#1C1C28;*/
+  --surface-trans: #1C1C28;/*rgba(28, 28, 40, 0.92);*/
+
+  --text: #FFFFFF;
+  --text-secondary: #A0A0B0;
+
+  --btn-bg: #2a2a3e;
+  --btn-bg-active: #3a3a52;
+  --btn-border: #3a3a52;
+
+  --separator: #2a2a3e;
+  --search-bg: #252538;
+
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
   --safe-right: env(safe-area-inset-right);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ios-bg: #000000;
-    --ios-surface: rgba(28, 28, 30, 0.82);
-    --ios-surface-solid: #1C1C1E;
-    --ios-text: #FFFFFF;
-    --ios-text-secondary: #8E8E93;
-    --ios-border: rgba(255, 255, 255, 0.1);
-    --ios-shadow: rgba(0, 0, 0, 0.4);
-    --ios-separator: rgba(255, 255, 255, 0.15);
-    --ios-search-bg: rgba(120, 120, 128, 0.36);
-  }
-}
-
-:root.force-light {
-  --ios-bg: #F2F2F7;
-  --ios-surface: rgba(255, 255, 255, 0.82);
-  --ios-surface-solid: #FFFFFF;
-  --ios-text: #000000;
-  --ios-text-secondary: #8E8E93;
-  --ios-border: rgba(0, 0, 0, 0.08);
-  --ios-shadow: rgba(0, 0, 0, 0.08);
-  --ios-separator: rgba(0, 0, 0, 0.1);
-  --ios-search-bg: rgba(120, 120, 128, 0.24);
-}
-
-:root.force-dark {
-  --ios-bg: #000000;
-  --ios-surface: rgba(28, 28, 30, 0.82);
-  --ios-surface-solid: #1C1C1E;
-  --ios-text: #FFFFFF;
-  --ios-text-secondary: #8E8E93;
-  --ios-border: rgba(255, 255, 255, 0.1);
-  --ios-shadow: rgba(0, 0, 0, 0.4);
-  --ios-separator: rgba(255, 255, 255, 0.15);
-  --ios-search-bg: rgba(120, 120, 128, 0.36);
 }
 
 * {
@@ -128,8 +106,8 @@ html, body {
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: var(--ios-bg);
-  color: var(--ios-text);
+  background: var(--bg);
+  color: var(--text);
   position: relative;
   padding: 0;
   margin: 0;
@@ -145,28 +123,28 @@ html, body {
   overflow: hidden;
   position: fixed;
   top: 0;
-  bottom: 0!important;
+  bottom: 0 !important;
   left: 0;
   right: 0;
-  inset: 0!important;
-  margin: 0 auto!important;
+  inset: 0 !important;
+  margin: 0 auto !important;
   padding-bottom: env(safe-area-inset-bottom);
   padding-top: env(safe-area-inset-top);
 }
 
 @media (min-width: 800px) {
-#app {
-  width: 800px;
-  margin: 0 auto;
+  #app {
+    width: 800px;
+    margin: 0 auto;
   }
-.channels-scroll {
-  padding: 15px 0px!important;
+  .channels-scroll {
+    padding: 15px 0px !important;
   }
   .ios-header {
     border-radius: 0 0 20px 20px;
-    }
+  }
 }
-  
+
 .view {
   position: absolute;
   inset: 0;
@@ -181,7 +159,7 @@ html, body {
 
 /* ===== Home View ===== */
 #homeView {
-  background: var(--ios-bg);
+  background: var(--bg);
 }
 
 /* Header */
@@ -190,10 +168,10 @@ html, body {
   padding-left: 15px;
   padding-right: 15px;
   padding-bottom: 15px;
-  background: var(--ios-surface);
+  background: var(--surface-trans);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--ios-separator);
+  border-bottom: 0.5px solid var(--separator);
   z-index: 100;
   flex-shrink: 0;
 }
@@ -209,6 +187,7 @@ html, body {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
+  color: var(--text);
 }
 
 .header-actions {
@@ -217,24 +196,42 @@ html, body {
   gap: 8px;
 }
 
-.header-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--ios-search-bg);
-  border: none;
-  color: var(--ios-blue);
-  display: flex;
+/* Botón Info con texto */
+.info-text-btn {
+  width: auto;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   cursor: pointer;
-  font-size: 22px;
-  transition: background 0.2s, transform 0.15s;
+  transition: transform 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.header-btn:active {
-  transform: scale(0.92);
-  opacity: 0.8;
+.info-text-btn:active {
+  transform: scale(0.96);
+}
+
+.info-text-btn .material-symbols-outlined {
+  font-size: 19px;
+font-weight: 700!important;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-text-btn .info-label {
+  font-weight: 500;
 }
 
 /* Search */
@@ -248,44 +245,46 @@ html, body {
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--ios-text-secondary);
-  font-size: 18px;
+  color: var(--text-secondary);
+  font-size: 23px;
+  font-weight: 500!important;
   pointer-events: none;
   z-index: 2;
 }
 
 .search-input {
   width: 100%;
-  height: 36px;
-  background: var(--ios-search-bg);
+  height: 40px;
+  background: var(--search-bg);
   border: none;
   border-radius: 10px;
-  padding: 0 34px;
+  padding: 0 40px;
   font-size: 16px;
-  color: var(--ios-text);
+  color: var(--text);
   outline: none;
   -webkit-appearance: none;
 }
 
 .search-input::placeholder {
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
 }
 
 .search-clear {
   position: absolute;
-  right: 6px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--ios-text-secondary);
-  color: var(--ios-surface-solid);
+  background: var(--text-secondary);
+  color: var(--search-bg);
   border: none;
   display: none;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 19px;
+  font-weight: 500!important;
   cursor: pointer;
 }
 
@@ -295,7 +294,7 @@ html, body {
 
 .results-count {
   font-size: 13px;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
   margin-top: 6px;
   padding-left: 4px;
   display: none;
@@ -305,7 +304,7 @@ html, body {
   display: block;
 }
 
-/* ===== Tiles Grid (Windows Phone style - uniforme sin huecos) ===== */
+/* ===== Tiles Grid ===== */
 .channels-scroll {
   flex: 1;
   overflow-y: auto;
@@ -343,15 +342,15 @@ html, body {
   }
 }
 
-/* Tile - todos uniformes */
+/* Tile */
 .tile {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.18s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.2s ease;
-  border: 0.5px solid var(--ios-border);
-  background: var(--ios-surface-solid);
+  border: 0.5px solid var(--btn-border);
+  background: var(--surface);
   aspect-ratio: 1 / 1;
 }
 
@@ -424,7 +423,7 @@ html, body {
 
 /* Banner tile */
 .tile-banner .tile-image-overlay {
-  background: linear-gradient(135deg, rgba(255,45,85,0.3) 0%, rgba(255,149,0,0.3) 100%),
+  background: linear-gradient(135deg, transparent, rgba(106,90,205,0.3) 100%),
               linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
 }
 
@@ -432,7 +431,7 @@ html, body {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: linear-gradient(135deg, #FF2D55, #FF9500);
+  background: var(--accent);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -462,68 +461,112 @@ html, body {
   font-size: 48px;
   margin-bottom: 12px;
   opacity: 0.5;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
 }
 
 .empty-text {
   font-size: 17px;
   font-weight: 600;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
 }
 
 /* ===== Player View ===== */
 #playerView {
-  background: #000;
+  background: var(--bg);
   z-index: 1000;
 }
 
+/* Player Header - contenedor flex perfecto */
 .player-header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  padding-top: max(15px, var(--safe-top));
-  padding-left: 15px;
-  padding-right: 15px;
-  padding-bottom: 15px;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+  padding-top: max(12px, var(--safe-top));
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 12px;
+  background: transparent;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.player-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: none;
-  color: #fff;
+.player-header-bar {
   display: flex;
+  align-items: center;
+justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+/* ===== BOTONES UNIFICADOS ===== */
+.ctrl-btn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-border);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  gap: 6px;
   cursor: pointer;
-  transition: background 0.2s;
-  padding: 0;
+  transition: background 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.player-back:active {
-  background: rgba(255,255,255,0.35);
+.ctrl-btn:active {
+  background: var(--btn-bg-active);
+  transform: scale(0.96);
 }
 
+.ctrl-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botón regresar - mismo estilo base */
+.player-back-btn {
+  padding: 0 14px;
+}
+
+.back-arrow {
+margin-left: -3px;
+font-size: 20px;
+}
+.refresh-icon {
+margin-left: -3px;
+font-size: 24px;
+}
+/* Título del player */
 .player-title {
   color: #fff;
-  font-size: 16px;
+  
   font-weight: 600;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+/* Botón Opciones - diferenciado por color cuando tiene opciones */
+.ctrl-btn.options-btn.has-options {
+  background: var(--primary);
+  border-color: var(--primary-dark);
+}
+
+.ctrl-btn.options-btn.has-options:active {
+  background: var(--primary-dark);
 }
 
 /* Player Container */
@@ -533,39 +576,32 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: var(--bg);
   overflow: hidden;
-  padding: calc(var(--safe-top) + 56px) 0 calc(var(--safe-bottom) + 72px);
+  padding: calc(var(--safe-top) + 64px) 0 calc(var(--safe-bottom) + 65px);
 }
 
 .player-video-box {
   width: 100%;
-  height: 100%;
   max-width: 100%;
+  height: auto;
   max-height: 100%;
+  aspect-ratio: 16/9;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
-
-#playerVideo {
+#playerVideo, #playerFrame {
   width: 100%;
   height: 100%;
-  max-height: 100%;
   object-fit: contain;
   background: #000;
-  border-radius: 8px;
+  border-radius: 0px;
+  border: none;
 }
 
-#playerFrame {
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-  border: none;
-  background: #000;
-  border-radius: 8px;
-}
 
 .player-loader {
   position: absolute;
@@ -573,15 +609,15 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: var(--bg);
   z-index: 5;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255,255,255,0.2);
-  border-top-color: var(--ios-blue);
+  border: 3px solid var(--btn-bg);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -590,14 +626,56 @@ html, body {
   to { transform: rotate(360deg); }
 }
 
-/* Player Controls Overlay */
+/* ===== IFRAME ERROR OVERLAY ===== */
+.iframe-error-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 6;
+  flex-direction: column;
+}
+
+.iframe-error-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  max-width: 320px;
+}
+
+.iframe-error-icon {
+  font-size: 56px;
+  color: var(--error);
+  margin-bottom: 16px;
+}
+
+.iframe-error-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.iframe-error-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+/* Player Controls */
 .player-controls {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 15px 15px max(15px, var(--safe-bottom));
-  background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);
+  padding: 12px 12px max(12px, var(--safe-bottom));
+  background: transparent;
   z-index: 10;
   display: flex;
   align-items: center;
@@ -612,48 +690,11 @@ html, body {
   gap: 10px;
 }
 
-.ctrl-btn {
-  height: 40px;
-  padding: 0 15px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 0.5px solid rgba(255,255,255,0.15);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.ctrl-btn:active {
-  background: rgba(255,255,255,0.35);
-  transform: scale(0.96);
-}
-
-.ctrl-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.ctrl-btn.options-btn {
-  background: rgba(255,255,255,0.25);
-}
-
-.ctrl-btn.options-btn.has-options {
-  background: var(--ios-blue);
-}
-
 /* ===== Bottom Sheet ===== */
 .sheet-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.5);
   z-index: 2000;
   visibility: hidden;
   opacity: 0;
@@ -672,7 +713,7 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--ios-surface-solid);
+  background: var(--surface-trans);
   border-radius: 24px 24px 0 0;
   transform: translateY(100%);
   visibility: hidden;
@@ -693,25 +734,26 @@ html, body {
   width: 36px;
   height: 4px;
   border-radius: 2px;
-  background: var(--ios-text-secondary);
+  background: var(--text-secondary);
   margin: 10px auto;
   opacity: 0.5;
 }
 
 .sheet-header {
   padding: 8px 20px 15px;
-  border-bottom: 0.5px solid var(--ios-separator);
+  border-bottom: 0.5px solid var(--separator);
 }
 
 .sheet-title {
   font-size: 18px;
   font-weight: 700;
   text-align: center;
+  color: var(--text);
 }
 
 .sheet-subtitle {
   font-size: 13px;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
   text-align: center;
   margin-top: 4px;
 }
@@ -722,7 +764,7 @@ html, body {
   padding: 8px 15px 15px;
 }
 
-/* Sheet item with live badge */
+/* Sheet item */
 .sheet-item {
   display: flex;
   align-items: center;
@@ -735,7 +777,7 @@ html, body {
 }
 
 .sheet-item:active {
-  background: var(--ios-bg);
+  background: var(--bg);
 }
 
 .sheet-item-img {
@@ -758,11 +800,12 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text);
 }
 
 .sheet-item-desc {
   font-size: 12px;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -773,7 +816,7 @@ html, body {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid var(--ios-light-gray);
+  border: 2px solid var(--btn-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -782,8 +825,8 @@ html, body {
 }
 
 .sheet-item.active .sheet-item-check {
-  background: var(--ios-blue);
-  border-color: var(--ios-blue);
+  background: var(--primary);
+  border-color: var(--primary);
   color: #fff;
 }
 
@@ -791,9 +834,9 @@ html, body {
   margin: 0 15px 12px;
   padding: 14px;
   border-radius: 14px;
-  background: var(--ios-bg);
+  background: var(--surface);
   border: none;
-  color: var(--ios-red);
+  color: var(--error);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -810,7 +853,7 @@ html, body {
 }
 
 .info-content {
-  color: var(--ios-text);
+  color: var(--text);
   font-size: 15px;
   line-height: 1.5;
 }
@@ -819,7 +862,7 @@ html, body {
   font-size: 17px;
   font-weight: 700;
   margin: 15px 0 8px;
-  color: var(--ios-text);
+  color: var(--text);
 }
 
 .info-content h3:first-child {
@@ -828,11 +871,11 @@ html, body {
 
 .info-content p {
   margin-bottom: 10px;
-  color: var(--ios-text-secondary);
+  color: var(--text-secondary);
 }
 
 .info-content b {
-  color: var(--ios-text);
+  color: var(--text);
   font-weight: 600;
 }
 

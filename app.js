@@ -1,6 +1,7 @@
 /**
  * Stream TV - Multi-Stream Player
  * iOS-optimized PWA with elegant native-like UX
+ * Tema oscuro único | SlateBlue + Accent
  */
 
 /* ================= STATE ================= */
@@ -28,6 +29,8 @@ const playerTitle = document.getElementById('playerTitle');
 const playerVideo = document.getElementById('playerVideo');
 const playerFrame = document.getElementById('playerFrame');
 const playerLoader = document.getElementById('playerLoader');
+const iframeErrorOverlay = document.getElementById('iframeErrorOverlay');
+const iframeRetryBtn = document.getElementById('iframeRetryBtn');
 const optionsBtn = document.getElementById('optionsBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const sheetOverlay = document.getElementById('sheetOverlay');
@@ -36,7 +39,6 @@ const sheetTitle = document.getElementById('sheetTitle');
 const sheetSubtitle = document.getElementById('sheetSubtitle');
 const sheetBody = document.getElementById('sheetBody');
 const sheetCancel = document.getElementById('sheetCancel');
-const themeBtn = document.getElementById('themeBtn');
 const infoBtn = document.getElementById('infoBtn');
 const infoOverlay = document.getElementById('infoOverlay');
 const infoSheet = document.getElementById('infoSheet');
@@ -76,36 +78,133 @@ function normalizeText(str) {
   return (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-/* ================= THEME ================= */
-function initTheme() {
-  const saved = localStorage.getItem('streamtv-theme');
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-  applyTheme(theme);
-}
+/* ================= ANTI-INSPECCIÓN AVANZADO ================= */
+(function initAntiInspect() {
+  // Bloquear clic derecho
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
 
-function applyTheme(theme) {
-  const html = document.documentElement;
-  if (theme === 'dark') {
-    html.classList.add('force-dark');
-    html.classList.remove('force-light');
-  } else {
-    html.classList.add('force-light');
-    html.classList.remove('force-dark');
+  // Bloquear selección de texto
+  document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+
+  // Bloquear arrastre de imágenes
+  document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+
+  // Bloquear copy/cut/paste
+  document.addEventListener('copy', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+  document.addEventListener('cut', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+  document.addEventListener('paste', function(e) {
+    e.preventDefault();
+    return false;
+  }, true);
+
+  // Bloquear teclas de desarrollador
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+U (ver fuente)
+    if (e.ctrlKey && (e.key === 'U' || e.keyCode === 85)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // F11 (pantalla completa del navegador - no relacionado con devtools pero útil bloquear)
+    if (e.key === 'F11' || e.keyCode === 122) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+S (guardar página)
+    if (e.ctrlKey && (e.key === 'S' || e.keyCode === 83)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    // Ctrl+P (imprimir)
+    if (e.ctrlKey && (e.key === 'P' || e.keyCode === 80)) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  }, true);
+
+  // Detección de DevTools por tamaño de ventana
+  let devtoolsOpen = false;
+  const threshold = 160;
+
+  function detectDevTools() {
+    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    if ((widthThreshold || heightThreshold) && !devtoolsOpen) {
+      devtoolsOpen = true;
+      // Redirigir o limpiar
+      document.body.innerHTML = '';
+      window.location.href = 'about:blank';
+    }
   }
-  localStorage.setItem('streamtv-theme', theme);
-  updateThemeIcon(theme);
-}
 
-function toggleTheme() {
-  const isDark = document.documentElement.classList.contains('force-dark');
-  applyTheme(isDark ? 'light' : 'dark');
-}
+  window.addEventListener('resize', detectDevTools);
+  setInterval(detectDevTools, 1000);
 
-function updateThemeIcon(theme) {
-  if (!themeBtn) return;
-  themeBtn.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-}
+  // Bloquear console.log básico (no es seguro pero disuade)
+  if (!env.isTV) {
+    const noop = function() {};
+    try {
+      console.log = noop;
+      console.warn = noop;
+      console.info = noop;
+      console.debug = noop;
+    } catch(e) {}
+  }
+
+  // Deshabilitar zoom con gestos táctiles
+  document.addEventListener('touchmove', function(e) {
+    if (e.scale !== 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Doble tap zoom
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  // Prevenir zoom con Ctrl+rueda
+  document.addEventListener('wheel', function(e) {
+    if (e.ctrlKey) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+})();
 
 /* ================= DATA LOADING ================= */
 async function loadChannels() {
@@ -211,7 +310,7 @@ function createBannerTile(banner, idx) {
     <div class="tile-image-wrap">
       <img class="tile-image" src="${banner.image || ''}" alt="${banner.title}" loading="lazy" onerror="this.style.display='none'">
       <div class="tile-image-overlay"></div>
-      <div class="tile-banner-badge">Info</div>
+      <div class="tile-banner-badge">NOTI</div>
     </div>
     <div class="tile-content">
       <div class="tile-name">${banner.title}</div>
@@ -230,12 +329,13 @@ function createChannelTile(key, group, idx) {
   tile.style.animationDelay = `${idx * 0.04}s`;
 
   const optionCount = group.length;
+  // Si solo hay 1 opción: icono Play + "Canal"
+  // Si hay más de 1: icono playlist + conteo de opciones
   const optionsText = optionCount > 1
     ? `<div class="tile-options-count"><span class="material-symbols-outlined">playlist_play</span> ${optionCount} opciones</div>`
-    : '';
+    : `<div class="tile-options-count"><span class="material-symbols-outlined">play_arrow</span> Canal</div>`;
 
-  // ← AQUÍ: antes del HTML, en JavaScript puro
-  const groupName = primary.groupName || key;
+  const groupName = primary.groupName || primary.name || key;
 
   tile.innerHTML = `
     <div class="tile-image-wrap">
@@ -263,6 +363,9 @@ function openPlayer(channel, group) {
   state.currentGroupKey = channel.group || channel.dataValue;
   state.isPlaying = true;
 
+  // Ocultar error overlay al abrir nuevo canal
+  iframeErrorOverlay.style.display = 'none';
+
   playerTitle.textContent = channel.name;
   homeView.classList.remove('active');
   playerView.classList.add('active');
@@ -280,6 +383,7 @@ function openPlayer(channel, group) {
 
 function loadMedia(url) {
   playerLoader.style.display = 'flex';
+  iframeErrorOverlay.style.display = 'none';
 
   const isStream = isDirectStream(url);
 
@@ -306,14 +410,104 @@ function loadMedia(url) {
     playerVideo.load();
     playerFrame.style.display = 'block';
     playerFrame.src = url;
-    playerFrame.onload = () => { playerLoader.style.display = 'none'; };
-    playerFrame.onerror = () => { playerLoader.style.display = 'none'; };
-    setTimeout(() => { playerLoader.style.display = 'none'; }, 3000);
+
+    // Manejo de carga del iframe
+    let loadTimeout;
+    let hasLoaded = false;
+
+    playerFrame.onload = function() {
+      hasLoaded = true;
+      clearTimeout(loadTimeout);
+      playerLoader.style.display = 'none';
+      // Verificar si el iframe cargó un error de Chrome
+      checkIframeError();
+    };
+
+    playerFrame.onerror = function() {
+      hasLoaded = true;
+      clearTimeout(loadTimeout);
+      showIframeError();
+    };
+
+    // Timeout de seguridad
+    loadTimeout = setTimeout(() => {
+      if (!hasLoaded) {
+        playerLoader.style.display = 'none';
+        showIframeError();
+      }
+    }, 8000);
+
+    // Timeout adicional para detectar errores de Chrome
+    setTimeout(() => {
+      if (playerFrame.style.display !== 'none') {
+        checkIframeError();
+      }
+    }, 3500);
   }
+}
+
+/* ================= IFRAME ERROR HANDLING ================= */
+function checkIframeError() {
+  try {
+    // Intentar acceder al contenido del iframe para detectar errores de Chrome
+    const frameDoc = playerFrame.contentDocument || playerFrame.contentWindow?.document;
+    if (frameDoc) {
+      const bodyText = frameDoc.body?.innerText || '';
+      const titleText = frameDoc.title || '';
+      const url = frameDoc.location?.href || '';
+
+      // Detectar páginas de error de Chrome
+      if (
+        url.includes('chrome-error') ||
+        url.includes('chromewebdata') ||
+        bodyText.includes('No se puede acceder a este sitio') ||
+        bodyText.includes('This site can\'t be reached') ||
+        bodyText.includes('No se puede llegar a este sitio') ||
+        bodyText.includes('ERR_') ||
+        bodyText.includes('error') && bodyText.includes('chrome') ||
+        titleText.includes('Error') ||
+        titleText.includes('No se puede') ||
+        frameDoc.body?.innerHTML?.includes('icon-generic') ||
+        frameDoc.body?.innerHTML?.includes('sub-frame-error')
+      ) {
+        showIframeError();
+        return;
+      }
+    }
+  } catch (e) {
+    // Cross-origin, no podemos acceder - verificar por URL visible
+    const frameSrc = playerFrame.src || '';
+    if (frameSrc.includes('chrome-error') || frameSrc.includes('chromewebdata')) {
+      showIframeError();
+      return;
+    }
+  }
+
+  // Si el iframe está vacío o no cargó nada visible
+  try {
+    const rect = playerFrame.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      // Verificar si el iframe tiene contenido visible
+      const computedStyle = window.getComputedStyle(playerFrame);
+      if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+        showIframeError();
+      }
+    }
+  } catch (e) {}
+}
+
+function showIframeError() {
+  iframeErrorOverlay.style.display = 'flex';
+  playerLoader.style.display = 'none';
+}
+
+function hideIframeError() {
+  iframeErrorOverlay.style.display = 'none';
 }
 
 function refreshPlayer() {
   if (!state.currentChannel) return;
+  hideIframeError();
   const url = state.currentChannel.resolvedUrl;
   const isStream = isDirectStream(url);
 
@@ -338,6 +532,7 @@ function refreshPlayer() {
 }
 
 function goBack() {
+  hideIframeError();
   playerVideo.pause();
   playerVideo.src = '';
   playerVideo.load();
@@ -361,7 +556,7 @@ let sheetCallback = null;
 function showOptionsSheet(group, currentChannel, callback) {
   sheetCallback = callback;
   const primary = getPrimaryChannel(group);
-  sheetTitle.textContent = primary.name;
+  sheetTitle.textContent = primary.groupName;
   sheetSubtitle.textContent = `${group.length} señal${group.length !== 1 ? 'es' : ''} disponible${group.length !== 1 ? 's' : ''}`;
 
   sheetBody.innerHTML = '';
@@ -459,7 +654,11 @@ searchClear.addEventListener('click', clearSearch);
 playerBack.addEventListener('click', goBack);
 refreshBtn.addEventListener('click', refreshPlayer);
 
-themeBtn.addEventListener('click', toggleTheme);
+// Botón retry del error overlay
+if (iframeRetryBtn) {
+  iframeRetryBtn.addEventListener('click', refreshPlayer);
+}
+
 infoBtn.addEventListener('click', openInfo);
 infoCloseBtn.addEventListener('click', closeInfo);
 infoOverlay.addEventListener('click', closeInfo);
@@ -471,6 +670,7 @@ optionsBtn.addEventListener('click', () => {
   showOptionsSheet(group, state.currentChannel, (selected) => {
     state.currentChannel = selected;
     playerTitle.textContent = selected.name;
+    hideIframeError();
     loadMedia(selected.resolvedUrl);
   });
 });
@@ -507,7 +707,6 @@ if ('serviceWorker' in navigator) {
 
 /* ================= INIT ================= */
 function init() {
-  initTheme();
   loadChannels();
   history.pushState({ view: 'home' }, '');
 }
