@@ -106,7 +106,7 @@ html, body {
   height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
   position: relative;
   padding: 0;
@@ -117,10 +117,11 @@ html, body {
 
 /* ===== App Container ===== */
 #app {
+  background: red;
   width: 100%;
   height: 100dvh;
   display: block;
-  overflow: scroll;
+  overflow: hidden;
   position: fixed;
   top: 0;
   bottom: 0 !important;
@@ -164,7 +165,7 @@ html, body {
 
 /* Header */
 .ios-header {
-  padding-top: max(25px, var(--safe-top));
+  padding-top: max(15px, var(--safe-top));
   padding-left: 15px;
   padding-right: 15px;
   padding-bottom: 15px;
@@ -174,6 +175,13 @@ html, body {
   border-bottom: 0.5px solid var(--separator);
   z-index: 100;
   flex-shrink: 0;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .ios-header {
+    /* Si hay notch (mayor a 0px), pone 25px. Si no hay notch, mantiene 15px */
+    padding-top: max(15px, calc(env(safe-area-inset-top) + 15px - env(safe-area-inset-top)));
+  }
 }
 
 .header-top {
