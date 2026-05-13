@@ -120,7 +120,7 @@ html, body {
   width: 100%;
   height: 100dvh;
   display: block;
-  overflow: hidden;
+  overflow: scroll;
   position: fixed;
   top: 0;
   bottom: 0 !important;
@@ -164,7 +164,7 @@ html, body {
 
 /* Header */
 .ios-header {
-  padding-top: max(15px, var(--safe-top));
+  padding-top: max(25px, var(--safe-top));
   padding-left: 15px;
   padding-right: 15px;
   padding-bottom: 15px;
