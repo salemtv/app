@@ -180,7 +180,7 @@ html, body {
 @media (display-mode: standalone), (display-mode: fullscreen) {
   .ios-header {
     /* Si hay notch (mayor a 0px), pone 25px. Si no hay notch, mantiene 15px */
-    padding-top: max(15px, calc(env(safe-area-inset-top) + 15px - env(safe-area-inset-top)));
+    padding-top: max(15px, calc(env(safe-area-inset-top) + 45px - env(safe-area-inset-top)));
   }
 }
 
