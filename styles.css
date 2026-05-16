@@ -707,8 +707,11 @@ font-size: 24px;
 
 /* ===== Bottom Sheet ===== */
 .sheet-overlay {
+  top: var(--safe-top)!important;
+  bottom: 0;
+  right: 0;
+  left: 0;
   position: absolute;
-  inset: 0;
   background: rgba(0,0,0,0.5);
   z-index: 2000;
   visibility: hidden;
